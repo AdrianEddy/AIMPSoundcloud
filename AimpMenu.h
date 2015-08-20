@@ -6,44 +6,44 @@
 #include <functional>
 
 class AimpMenu {
-	typedef std::function<void()> CallbackFunc;
+    typedef std::function<void()> CallbackFunc;
 
-	class ClickHandler : public IUnknownInterfaceImpl<IAIMPActionEvent> {
-	public:
-		ClickHandler(CallbackFunc callback) : m_callback(callback) { }
+    class ClickHandler : public IUnknownInterfaceImpl<IAIMPActionEvent> {
+    public:
+        ClickHandler(CallbackFunc callback) : m_callback(callback) { }
 
-		virtual HRESULT WINAPI QueryInterface(REFIID riid, LPVOID* ppvObj) {
-			if (!ppvObj) return E_POINTER;
+        virtual HRESULT WINAPI QueryInterface(REFIID riid, LPVOID* ppvObj) {
+            if (!ppvObj) return E_POINTER;
 
-			if (riid == IID_IAIMPActionEvent) {
-				*ppvObj = this;
-				AddRef();
-				return S_OK;
-			}
+            if (riid == IID_IAIMPActionEvent) {
+                *ppvObj = this;
+                AddRef();
+                return S_OK;
+            }
 
-			return E_NOINTERFACE;
-		}
+            return E_NOINTERFACE;
+        }
 
-		virtual void WINAPI OnExecute(IUnknown *Data) { m_callback(); }
+        virtual void WINAPI OnExecute(IUnknown *Data) { m_callback(); }
 
-	private:
-		CallbackFunc m_callback;
-	};
+    private:
+        CallbackFunc m_callback;
+    };
 public:
-	AimpMenu(IAIMPMenuItem *item);
+    AimpMenu(IAIMPMenuItem *item);
 
-	IAIMPMenuItem *Add(const std::wstring &name, CallbackFunc action, UINT icon = 0);
+    IAIMPMenuItem *Add(const std::wstring &name, CallbackFunc action, UINT icon = 0);
 
-	static AimpMenu *Get(int id);
+    static AimpMenu *Get(int id);
 
-	static bool Init(IAIMPCore *Core);
+    static bool Init(IAIMPCore *Core);
 
 private:
-	AimpMenu(const AimpMenu&);
-	AimpMenu& operator=(const AimpMenu&);
+    AimpMenu(const AimpMenu&);
+    AimpMenu& operator=(const AimpMenu&);
 
-	IAIMPMenuItem *m_menuItem;
+    IAIMPMenuItem *m_menuItem;
 
-	static IAIMPCore *m_core;
-	static IAIMPServiceMenuManager *m_menuManager;
+    static IAIMPCore *m_core;
+    static IAIMPServiceMenuManager *m_menuManager;
 };

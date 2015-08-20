@@ -3,21 +3,21 @@
 #include <functional>
 
 class TcpServer {
-	typedef std::function<bool(TcpServer *, char *, char **)> RequestFunc;
+    typedef std::function<bool(TcpServer *, char *, char **)> RequestFunc;
 
 public:
-	TcpServer(int port, RequestFunc callback);
-	~TcpServer();
+    TcpServer(int port, RequestFunc callback);
+    ~TcpServer();
 
-	bool Start();
+    bool Start();
 
-	inline void setDeleteOnFinish(bool v) { m_deleteOnFinish = v; }
+    inline void setDeleteOnFinish(bool v) { m_deleteOnFinish = v; }
 
 private:
-	static void ThreadFunc(void *arg);
+    static void ThreadFunc(void *arg);
 
-	bool m_deleteOnFinish;
-	int m_port;
-	RequestFunc m_callback;
+    bool m_deleteOnFinish;
+    int m_port;
+    RequestFunc m_callback;
 };
 

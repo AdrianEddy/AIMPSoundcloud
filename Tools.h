@@ -7,11 +7,11 @@
 #define DebugW(...) { wchar_t msg[2048]; wsprintf(msg, __VA_ARGS__); OutputDebugStringW(msg); }
 
 struct Tools {
-	static std::wstring ToWString(const std::string &);
-	static std::wstring ToWString(const char *);
-	static std::wstring ToWString(const rapidjson::Value &);
+    static std::wstring ToWString(const std::string &);
+    static std::wstring ToWString(const char *);
+    static std::wstring ToWString(const rapidjson::Value &);
 
-	static std::wstring UrlEncode(const std::wstring &);
-	static void OutputLastError();
+    static std::wstring UrlEncode(const std::wstring &);
+    static void OutputLastError();
 };
 

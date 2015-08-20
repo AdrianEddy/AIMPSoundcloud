@@ -9,23 +9,23 @@
 
 class Config {
 public:
-	static bool Init(IAIMPCore *core);
+    static bool Init(IAIMPCore *core);
 
-	static void Delete(const std::wstring &name);
+    static void Delete(const std::wstring &name);
 
-	static void SetString(const std::wstring &name, const std::wstring &value);
-	static void SetInt64(const std::wstring &name, const INT64 &value);
+    static void SetString(const std::wstring &name, const std::wstring &value);
+    static void SetInt64(const std::wstring &name, const INT64 &value);
 
-	static std::wstring GetString(const std::wstring &name, const std::wstring &def = std::wstring());
-	static INT64 GetInt64(const std::wstring &name, const INT64 &def = 0);
+    static std::wstring GetString(const std::wstring &name, const std::wstring &def = std::wstring());
+    static INT64 GetInt64(const std::wstring &name, const INT64 &def = 0);
 
-	static inline std::wstring PluginConfigFolder() { return m_configFolder; }
+    static inline std::wstring PluginConfigFolder() { return m_configFolder; }
 
 private:
-	Config();
-	Config(const Config&);
-	Config& operator=(const Config&);
+    Config();
+    Config(const Config&);
+    Config& operator=(const Config&);
 
-	static std::wstring m_configFolder;
-	static IAIMPConfig *m_config;
+    static std::wstring m_configFolder;
+    static IAIMPConfig *m_config;
 };

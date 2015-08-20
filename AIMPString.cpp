@@ -19,7 +19,7 @@ AIMPString::AIMPString(const std::wstring &string)
 :
 string_(new std::wstring(string)),
 weak_ref_(false) {
-	//AddRef();
+    //AddRef();
 }
 
 AIMPString::AIMPString(const AIMPString& rhs)
@@ -66,8 +66,8 @@ HRESULT WINAPI AIMPString::GetChar(int index, WCHAR *ch)
 
 WCHAR* WINAPI AIMPString::GetData()
 {
-	if (GetLength() <= 0)
-		return nullptr;
+    if (GetLength() <= 0)
+        return nullptr;
     return &(*string_->begin());
 }
 
@@ -186,7 +186,7 @@ HRESULT WINAPI AIMPString::Replace(IAIMPString* /*OldPattern*/, IAIMPString* /*N
 }
 
 HRESULT WINAPI AIMPString::Replace2(WCHAR* /*OldPatternChars*/, int /*OldPatternCharsCount*/,
-    		                        WCHAR* /*NewPatternChars*/, int /*NewPatternCharsCount*/, int /*Flags*/)
+                                    WCHAR* /*NewPatternChars*/, int /*NewPatternCharsCount*/, int /*Flags*/)
 {
     return E_NOTIMPL; ///!!! TODO: impement
 }
