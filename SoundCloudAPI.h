@@ -5,7 +5,6 @@
 #include <unordered_set>
 #include <cstdint>
 
-class AIMPSoundcloudPlugin;
 class IAIMPPlaylist;
 
 class SoundCloudAPI {
@@ -25,8 +24,6 @@ public:
         LoadingState() : AdditionalPos(0), InsertPos(0), UpdateAdditionalPos(false) {}
     };
 
-    static void Init(AIMPSoundcloudPlugin *plugin);
-
     static void LoadLikes();
     static void LoadStream();
 
@@ -44,6 +41,4 @@ private:
     SoundCloudAPI();
     SoundCloudAPI(const SoundCloudAPI &);
     SoundCloudAPI &operator=(const SoundCloudAPI &);
-
-    static AIMPSoundcloudPlugin *m_plugin;
 };

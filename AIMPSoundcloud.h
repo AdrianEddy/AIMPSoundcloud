@@ -25,13 +25,16 @@ static const wchar_t Name[] = L"Soundcloud player";
 static const wchar_t Author[] = L"Eddy";
 static const wchar_t ShortDesc[] = L"Provides ability to play Soundcloud tracks within AIMP";
 
-class AIMPSoundcloudPlugin : public IUnknownInterfaceImpl<IAIMPPlugin> {
+class Plugin : public IUnknownInterfaceImpl<IAIMPPlugin> {
     friend class OptionsDialog;
     friend class MessageHook;
 
 public:
-    AIMPSoundcloudPlugin() : m_playlistManager(nullptr), m_messageDispatcher(nullptr), m_gdiplusToken(0), m_core(nullptr) {
+    static Plugin *instance() {
+        if (!m_instance) 
+            m_instance = new Plugin();
 
+        return m_instance;
     }
 
     PWCHAR WINAPI InfoGet(int Index) {
@@ -67,6 +70,8 @@ public:
     void ForSelectedTracks(std::function<int(IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t)>);
     void ForEveryItem(IAIMPPlaylist *pl, std::function<int(IAIMPPlaylistItem *, IAIMPFileInfo *, int64_t)> callback);
 
+    HWND GetMainWindowHandle();
+
     inline std::wstring getAccessToken() const { return m_accessToken; }
     inline void setAccessToken(const std::wstring &accessToken) { m_accessToken = accessToken; }
 
@@ -75,6 +80,14 @@ public:
     inline IAIMPCore *core() const { return m_core; }
 
 private:
+    Plugin() : m_playlistManager(nullptr), m_messageDispatcher(nullptr), m_gdiplusToken(0), m_core(nullptr) {
+        AddRef();
+    }
+    Plugin(const Plugin &);
+    Plugin &operator=(const Plugin &);
+
+    static Plugin *m_instance;
+
     MessageHook *m_messageHook;
     IAIMPServicePlaylistManager *m_playlistManager;
     IAIMPServiceMessageDispatcher *m_messageDispatcher;

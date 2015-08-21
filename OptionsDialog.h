@@ -5,11 +5,11 @@
 #include "IUnknownInterfaceImpl.h"
 #include "SDK/apiOptions.h"
 
-class AIMPSoundcloudPlugin;
+class Plugin;
 
 class OptionsDialog : public IUnknownInterfaceImpl<IAIMPOptionsDialogFrame> {
 public:
-    OptionsDialog(AIMPSoundcloudPlugin *plugin);
+    OptionsDialog(Plugin *plugin);
     ~OptionsDialog();
 
     virtual HRESULT WINAPI QueryInterface(REFIID riid, LPVOID* ppvObj) {
@@ -36,7 +36,7 @@ public:
 
 private:
     HWND m_handle;
-    AIMPSoundcloudPlugin *m_plugin;
+    Plugin *m_plugin;
 
     static BOOL CALLBACK DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam);
     static LRESULT CALLBACK ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);

@@ -4,12 +4,13 @@
 #include "SDK/apiPlayer.h"
 
 HRESULT __declspec(dllexport) WINAPI AIMPPluginGetHeader(IAIMPPlugin **Header) {
-    *Header = new AIMPSoundcloudPlugin();
-    (*Header)->AddRef();
+    *Header = Plugin::instance();
     return S_OK;
 }
 
-HRESULT WINAPI AIMPSoundcloudPlugin::Initialize(IAIMPCore *Core) {
+Plugin *Plugin::m_instance = nullptr;
+
+HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
     if (Gdiplus::GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL) != Gdiplus::Status::Ok)
         return E_FAIL;
@@ -21,7 +22,6 @@ HRESULT WINAPI AIMPSoundcloudPlugin::Initialize(IAIMPCore *Core) {
       if (!Config::Init(Core)) return E_FAIL;
     if (!AimpHTTP::Init(Core)) return E_FAIL;
     if (!AimpMenu::Init(Core)) return E_FAIL;
-    SoundCloudAPI::Init(this);
 
     Config::LoadExtendedConfig();
 
@@ -106,7 +106,7 @@ HRESULT WINAPI AIMPSoundcloudPlugin::Initialize(IAIMPCore *Core) {
     return S_OK;
 }
 
-HRESULT WINAPI AIMPSoundcloudPlugin::Finalize() {
+HRESULT WINAPI Plugin::Finalize() {
     m_messageDispatcher->Unhook(m_messageHook);
     m_messageDispatcher->Release();
     m_playlistManager->Release();
@@ -119,7 +119,7 @@ HRESULT WINAPI AIMPSoundcloudPlugin::Finalize() {
     return S_OK;
 }
 
-IAIMPPlaylist *AIMPSoundcloudPlugin::GetPlaylist(const std::wstring &playlistName, bool activate) {
+IAIMPPlaylist *Plugin::GetPlaylist(const std::wstring &playlistName, bool activate) {
     IAIMPPlaylist *playlistPointer = nullptr;
     if (SUCCEEDED(m_playlistManager->GetLoadedPlaylistByName(new AIMPString(playlistName), &playlistPointer)) && playlistPointer) {
         if (activate)
@@ -134,7 +134,7 @@ IAIMPPlaylist *AIMPSoundcloudPlugin::GetPlaylist(const std::wstring &playlistNam
     return nullptr;
 }
 
-IAIMPPlaylist *AIMPSoundcloudPlugin::GetCurrentPlaylist() {
+IAIMPPlaylist *Plugin::GetCurrentPlaylist() {
     IAIMPPlaylist *pl = nullptr;
     if (SUCCEEDED(m_playlistManager->GetActivePlaylist(&pl))) {
         return pl;
@@ -142,7 +142,7 @@ IAIMPPlaylist *AIMPSoundcloudPlugin::GetCurrentPlaylist() {
     return nullptr;
 }
 
-IAIMPPlaylist *AIMPSoundcloudPlugin::UpdatePlaylistGrouping(IAIMPPlaylist *pl) {
+IAIMPPlaylist *Plugin::UpdatePlaylistGrouping(IAIMPPlaylist *pl) {
     if (!pl)
         return nullptr;
 
@@ -156,7 +156,7 @@ IAIMPPlaylist *AIMPSoundcloudPlugin::UpdatePlaylistGrouping(IAIMPPlaylist *pl) {
     return pl;
 }
 
-IAIMPPlaylistItem *AIMPSoundcloudPlugin::GetCurrentTrack() {
+IAIMPPlaylistItem *Plugin::GetCurrentTrack() {
     IAIMPServicePlayer *player = nullptr;
     if (SUCCEEDED(m_core->QueryInterface(IID_IAIMPServicePlayer, reinterpret_cast<void **>(&player)))) {
         IAIMPPlaylistItem *item = nullptr;
@@ -169,7 +169,7 @@ IAIMPPlaylistItem *AIMPSoundcloudPlugin::GetCurrentTrack() {
     return nullptr;
 }
 
-void AIMPSoundcloudPlugin::ForSelectedTracks(std::function<int(IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t)> callback) {
+void Plugin::ForSelectedTracks(std::function<int(IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t)> callback) {
     if (!callback)
         return;
 
@@ -223,7 +223,7 @@ void AIMPSoundcloudPlugin::ForSelectedTracks(std::function<int(IAIMPPlaylist *, 
     }
 }
 
-void AIMPSoundcloudPlugin::ForEveryItem(IAIMPPlaylist *pl, std::function<int(IAIMPPlaylistItem *, IAIMPFileInfo *, int64_t)> callback) {
+void Plugin::ForEveryItem(IAIMPPlaylist *pl, std::function<int(IAIMPPlaylistItem *, IAIMPFileInfo *, int64_t)> callback) {
     if (!pl || !callback)
         return;
 
@@ -265,4 +265,12 @@ void AIMPSoundcloudPlugin::ForEveryItem(IAIMPPlaylist *pl, std::function<int(IAI
         }
     }
     pl->EndUpdate();
+}
+
+HWND Plugin::GetMainWindowHandle() {
+    HWND handle = NULL;
+    if (SUCCEEDED(m_messageDispatcher->Send(AIMP_MSG_PROPERTY_HWND, AIMP_MSG_PROPVALUE_GET, &handle))) {
+        return handle;
+    }
+    return NULL;
 }

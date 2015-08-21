@@ -3,11 +3,14 @@
 #include "Tools.h"
 #include "SoundCloudAPI.h"
 #include "GdiPlusImageLoader.h"
+#include "AIMPSoundcloud.h"
 
 extern HINSTANCE g_hInst;
 
 void AddURLDialog::Show() {
-    HWND handle = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_ADDURL), FindWindow(L"", L"AIMP3"), DlgProc);
+    HWND parent = Plugin::instance()->GetMainWindowHandle();
+
+    HWND handle = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_ADDURL), parent, DlgProc);
     if (handle != NULL) {
         ShowWindow(handle, SW_SHOW);
     }

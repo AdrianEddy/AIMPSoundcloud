@@ -9,12 +9,6 @@
 #include <Strsafe.h>
 #include <string>
 
-AIMPSoundcloudPlugin *SoundCloudAPI::m_plugin = nullptr;
-
-void SoundCloudAPI::Init(AIMPSoundcloudPlugin *plugin) {
-    m_plugin = plugin;
-}
-
 void SoundCloudAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d, LoadingState *state) {
     if (!playlist)
         return;
@@ -27,7 +21,7 @@ void SoundCloudAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value 
     }
 
     IAIMPFileInfo *file_info = nullptr;
-    if (m_plugin->core()->CreateObject(IID_IAIMPFileInfo, reinterpret_cast<void **>(&file_info)) == S_OK) {
+    if (Plugin::instance()->core()->CreateObject(IID_IAIMPFileInfo, reinterpret_cast<void **>(&file_info)) == S_OK) {
         auto processItem = [&](const rapidjson::Value &item) {
             if (!item.HasMember("id")) {
                 DebugA("NOT adding %s\n ", item["title"].GetString());
@@ -119,7 +113,7 @@ void SoundCloudAPI::LoadFromUrl(const std::wstring &url, IAIMPPlaylist *playlist
     if (!playlist || !state)
         return;
 
-    AimpHTTP::Get(url + L"&client_id=" TEXT(CLIENT_ID) L"&oauth_token=" + m_plugin->getAccessToken(), [playlist, state](unsigned char *data, int size) {
+    AimpHTTP::Get(url + L"&client_id=" TEXT(CLIENT_ID) L"&oauth_token=" + Plugin::instance()->getAccessToken(), [playlist, state](unsigned char *data, int size) {
         playlist->BeginUpdate();
         rapidjson::Document d;
         d.Parse(reinterpret_cast<const char *>(data));
@@ -159,10 +153,10 @@ void SoundCloudAPI::LoadFromUrl(const std::wstring &url, IAIMPPlaylist *playlist
 }
 
 void SoundCloudAPI::LoadLikes() {
-    if (!m_plugin->isConnected())
+    if (!Plugin::instance()->isConnected())
         return;
 
-    IAIMPPlaylist *pl = m_plugin->GetPlaylist(L"Soundcloud - Likes");
+    IAIMPPlaylist *pl = Plugin::instance()->GetPlaylist(L"Soundcloud - Likes");
 
     LoadingState *state = new LoadingState();
     state->ReferenceName = Config::GetString(L"UserName") + L"'s likes";
@@ -173,10 +167,10 @@ void SoundCloudAPI::LoadLikes() {
 }
 
 void SoundCloudAPI::LoadStream() {
-    if (!m_plugin->isConnected())
+    if (!Plugin::instance()->isConnected())
         return;
 
-    IAIMPPlaylist *pl = m_plugin->GetPlaylist(L"Soundcloud - Stream");
+    IAIMPPlaylist *pl = Plugin::instance()->GetPlaylist(L"Soundcloud - Stream");
 
     LoadingState *state = new LoadingState();
     state->ReferenceName = Config::GetString(L"UserName") + L"'s stream";
@@ -190,7 +184,7 @@ void SoundCloudAPI::GetExistingTrackIds(IAIMPPlaylist *pl, LoadingState *state) 
         return;
 
     // Fetch current track ids from playlist
-    m_plugin->ForEveryItem(pl, [&](IAIMPPlaylistItem *item, IAIMPFileInfo *info, int64_t id) -> int {
+    Plugin::instance()->ForEveryItem(pl, [&](IAIMPPlaylistItem *item, IAIMPFileInfo *info, int64_t id) -> int {
         if (id > 0) {
             state->TrackIds.insert(id);
         }
@@ -204,7 +198,7 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
         return;
     }
 
-    AimpHTTP::Get(L"https://api.soundcloud.com/resolve?url=" + Tools::UrlEncode(url) + L"&client_id=" TEXT(CLIENT_ID) L"&oauth_token=" + m_plugin->getAccessToken(), [createPlaylist, url, playlistTitle](unsigned char *data, int size) {
+    AimpHTTP::Get(L"https://api.soundcloud.com/resolve?url=" + Tools::UrlEncode(url) + L"&client_id=" TEXT(CLIENT_ID) L"&oauth_token=" + Plugin::instance()->getAccessToken(), [createPlaylist, url, playlistTitle](unsigned char *data, int size) {
         rapidjson::Document d;
         d.Parse(reinterpret_cast<const char *>(data));
 
@@ -246,11 +240,11 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
             std::wstring finalPlaylistName;
             if (createPlaylist) {
                 finalPlaylistName = playlistTitle.empty() ? plName : playlistTitle;
-                pl = m_plugin->GetPlaylist(finalPlaylistName);
+                pl = Plugin::instance()->GetPlaylist(finalPlaylistName);
                 if (!pl)
                     return;
             } else {
-                pl = m_plugin->GetCurrentPlaylist();
+                pl = Plugin::instance()->GetCurrentPlaylist();
                 if (!pl)
                     return;
 
@@ -289,7 +283,7 @@ void SoundCloudAPI::LikeSong(int64_t trackId) {
     std::wstring url(L"https://api.soundcloud.com/me/favorites/");
     url += std::to_wstring(trackId);
     url += L"?client_id=" TEXT(CLIENT_ID)
-           L"&oauth_token=" + m_plugin->getAccessToken();
+           L"&oauth_token=" + Plugin::instance()->getAccessToken();
 
     AimpHTTP::Put(url, [](unsigned char *data, int size) {
         rapidjson::Document d;
@@ -305,7 +299,7 @@ void SoundCloudAPI::UnlikeSong(int64_t trackId) {
     std::wstring url(L"https://api.soundcloud.com/me/favorites/");
     url += std::to_wstring(trackId);
     url += L"?client_id=" TEXT(CLIENT_ID)
-           L"&oauth_token=" + m_plugin->getAccessToken();
+           L"&oauth_token=" + Plugin::instance()->getAccessToken();
 
     AimpHTTP::Delete(url, [trackId](unsigned char *data, int size) {
         rapidjson::Document d;
@@ -319,10 +313,10 @@ void SoundCloudAPI::UnlikeSong(int64_t trackId) {
             }
         }
     });
-    IAIMPPlaylist *likes = m_plugin->GetPlaylist(L"Soundcloud - Likes");
-    m_plugin->ForEveryItem(likes, [&](IAIMPPlaylistItem *item, IAIMPFileInfo *info, int64_t id) -> int {
+    IAIMPPlaylist *likes = Plugin::instance()->GetPlaylist(L"Soundcloud - Likes");
+    Plugin::instance()->ForEveryItem(likes, [&](IAIMPPlaylistItem *item, IAIMPFileInfo *info, int64_t id) -> int {
         if (id == trackId) {
-            return AIMPSoundcloudPlugin::FLAG_DELETE_ITEM | AIMPSoundcloudPlugin::FLAG_STOP_LOOP;
+            return Plugin::FLAG_DELETE_ITEM | Plugin::FLAG_STOP_LOOP;
         }
         return 0;
     });

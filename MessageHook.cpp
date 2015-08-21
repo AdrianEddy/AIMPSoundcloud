@@ -4,7 +4,7 @@
 #include "SDK/apiPlaylists.h"
 #include "AIMPSoundcloud.h"
 
-MessageHook::MessageHook(AIMPSoundcloudPlugin *pl) : m_plugin(pl) {
+MessageHook::MessageHook(Plugin *pl) : m_plugin(pl) {
     
 }
 

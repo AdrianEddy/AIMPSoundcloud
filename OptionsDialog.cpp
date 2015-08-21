@@ -22,7 +22,7 @@ extern HINSTANCE g_hInst;
 // TODO: limit stream entries 
 // TODO: add duration to title
 
-OptionsDialog::OptionsDialog(AIMPSoundcloudPlugin *plugin) : m_plugin(plugin), m_handle(NULL) {
+OptionsDialog::OptionsDialog(Plugin *plugin) : m_plugin(plugin), m_handle(NULL) {
 
 }
 
@@ -166,7 +166,7 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
 
 BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
     static OptionsDialog *dialog = nullptr;
-    static AIMPSoundcloudPlugin *plugin = nullptr;
+    static Plugin *plugin = nullptr;
 
     switch (Msg) {
         case WM_INITDIALOG: {
