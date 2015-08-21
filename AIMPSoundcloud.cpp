@@ -16,8 +16,6 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
         return E_FAIL;
 
     m_core = Core;
-    if (FAILED(Core->RegisterExtension(IID_IAIMPServiceOptionsDialog, new OptionsDialog(this))))
-        return E_FAIL;
 
       if (!Config::Init(Core)) return E_FAIL;
     if (!AimpHTTP::Init(Core)) return E_FAIL;
@@ -102,6 +100,9 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
         delete m_messageHook;
         return E_FAIL;
     }
+
+    if (FAILED(Core->RegisterExtension(IID_IAIMPServiceOptionsDialog, new OptionsDialog(this))))
+        return E_FAIL;
 
     return S_OK;
 }
