@@ -35,6 +35,7 @@ public:
 private:
     struct ThreadParams {
         std::string request;
+        std::string host;
         CallbackFunc callback;
     };
     static void ThreadFunc(void *args);

@@ -100,6 +100,7 @@ bool AimpHTTP::Delete(const std::wstring &url, CallbackFunc callback) {
 void AimpHTTP::ThreadFunc(void *args) {
     ThreadParams *params = (ThreadParams*)args;
     std::string request = params->request;
+    std::string host = params->host;
     AimpHTTP::CallbackFunc callback = params->callback;
     delete params;
 
@@ -115,8 +116,8 @@ void AimpHTTP::ThreadFunc(void *args) {
     hints.ai_protocol = IPPROTO_TCP;
     hints.ai_socktype = SOCK_STREAM;
 
-    struct addrinfo* targetAdressInfo = NULL;
-    DWORD getAddrRes = getaddrinfo("api.soundcloud.com", NULL, &hints, &targetAdressInfo);
+    struct addrinfo *targetAdressInfo = NULL;
+    DWORD getAddrRes = getaddrinfo(host.c_str(), NULL, &hints, &targetAdressInfo);
     if (getAddrRes != 0 || targetAdressInfo == NULL) {
         DebugA("Could not resolve the Host Name\n");
         WSACleanup();
@@ -124,7 +125,7 @@ void AimpHTTP::ThreadFunc(void *args) {
     }
 
     SOCKADDR_IN sockAddr;
-    sockAddr.sin_addr = ((struct sockaddr_in*) targetAdressInfo->ai_addr)->sin_addr;
+    sockAddr.sin_addr = ((struct sockaddr_in *)targetAdressInfo->ai_addr)->sin_addr;
     sockAddr.sin_family = AF_INET;
     sockAddr.sin_port = htons(80);
     freeaddrinfo(targetAdressInfo);
@@ -136,7 +137,7 @@ void AimpHTTP::ThreadFunc(void *args) {
         return;
     }
 
-    if (connect(webSocket, (SOCKADDR*)&sockAddr, sizeof(sockAddr)) != 0) {
+    if (connect(webSocket, (SOCKADDR *)&sockAddr, sizeof(sockAddr)) != 0) {
         DebugA("Could not connect\n");
         closesocket(webSocket);
         WSACleanup();
@@ -156,8 +157,7 @@ void AimpHTTP::ThreadFunc(void *args) {
     ZeroMemory(buffer, sizeof(buffer));
     int dataLen;
     if ((dataLen = recv(webSocket, buffer, sizeof(buffer), 0) > 0)) {
-        char *body = strstr(buffer, "\r\n\r\n");
-        if (body) {
+        if (char *body = strstr(buffer, "\r\n\r\n")) {
             body += 4;
             if (callback)
                 callback(reinterpret_cast<unsigned char *>(body), strlen(body));
@@ -179,7 +179,8 @@ bool AimpHTTP::RawRequest(const std::string &method, const std::wstring &url, Ca
             ThreadParams *p = new ThreadParams();
             p->request += method + " ";
             p->request += request;
-            p->request += " HTTP/1.1\r\nHost: " + std::string(urlc, request) + "\r\nConnection: close\r\n\r\n";
+            p->host = std::string(urlc, request);
+            p->request += " HTTP/1.1\r\nHost: " + p->host + "\r\nConnection: close\r\n\r\n";
             p->callback = callback;
 
             HANDLE hThread = (HANDLE)_beginthread(AimpHTTP::ThreadFunc, 0, p);
