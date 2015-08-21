@@ -23,12 +23,23 @@ class AimpHTTP {
     };
 
 public:
+    static bool Init(IAIMPCore *Core);
+    static void Deinit();
+
+    static bool Put(const std::wstring &url, CallbackFunc callback);
+    static bool Delete(const std::wstring &url, CallbackFunc callback);
     static bool Get(const std::wstring &url, CallbackFunc callback);
     static bool Download(const std::wstring &url, const std::wstring &destination, CallbackFunc callback);
     static bool Post(const std::wstring &url, const std::string &body, CallbackFunc callback);
-    static bool Init(IAIMPCore *Core);
 
 private:
+    struct ThreadParams {
+        std::string request;
+        CallbackFunc callback;
+    };
+    static void ThreadFunc(void *args);
+    static bool RawRequest(const std::string &method, const std::wstring &, CallbackFunc callback);
+
     AimpHTTP();
     AimpHTTP(const AimpHTTP&);
     AimpHTTP& operator=(const AimpHTTP&);

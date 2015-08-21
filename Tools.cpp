@@ -23,6 +23,11 @@ std::wstring Tools::ToWString(const rapidjson::Value &val) {
     return std::wstring();
 }
 
+std::string Tools::ToString(const std::wstring &string) {
+    static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    return converter.to_bytes(string);
+}
+
 void Tools::OutputLastError() {
     DWORD errorMessageID = ::GetLastError();
     if (errorMessageID == 0)
@@ -54,10 +59,13 @@ std::wstring Tools::UrlEncode(const std::wstring &url) {
     return escaped.str();
 }
 
-
-/*
-std::string Tools::ToString(const std::string &arg) {
-    static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    return converter.to_bytes(string);
+int64_t Tools::TrackIdFromUrl(const std::wstring &url) {
+    std::wstring::size_type ptr, ptr_end;
+    if ((ptr = url.find(L"tracks/")) != std::wstring::npos) {
+        ptr += 7;
+        if ((ptr_end = url.find(L"/", ptr)) != std::wstring::npos) {
+            return std::stoll(url.substr(ptr, ptr_end - ptr));
+        }
+    }
+    return 0;
 }
-*/

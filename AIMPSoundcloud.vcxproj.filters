@@ -54,6 +54,9 @@
     <ClInclude Include="AddURLDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MessageHook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AIMPSoundcloud.cpp">
@@ -87,6 +90,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AddURLDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MessageHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

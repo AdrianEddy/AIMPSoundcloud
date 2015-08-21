@@ -24,23 +24,26 @@ class AimpMenu {
             return E_NOINTERFACE;
         }
 
-        virtual void WINAPI OnExecute(IUnknown *Data) { m_callback(); }
+        virtual void WINAPI OnExecute(IUnknown *Data) { if (m_callback) m_callback(); }
 
     private:
         CallbackFunc m_callback;
     };
+
 public:
     AimpMenu(IAIMPMenuItem *item);
+    ~AimpMenu();
+
+    static bool Init(IAIMPCore *Core);
+    static void Deinit();
 
     IAIMPMenuItem *Add(const std::wstring &name, CallbackFunc action, UINT icon = 0);
 
     static AimpMenu *Get(int id);
 
-    static bool Init(IAIMPCore *Core);
-
 private:
-    AimpMenu(const AimpMenu&);
-    AimpMenu& operator=(const AimpMenu&);
+    AimpMenu(const AimpMenu &);
+    AimpMenu &operator=(const AimpMenu &);
 
     IAIMPMenuItem *m_menuItem;
 

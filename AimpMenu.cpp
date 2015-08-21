@@ -13,6 +13,11 @@ AimpMenu::AimpMenu(IAIMPMenuItem *item) : m_menuItem(item) {
 
 }
 
+AimpMenu::~AimpMenu() {
+    if (m_menuItem)
+        m_menuItem->Release();
+}
+
 IAIMPMenuItem *AimpMenu::Add(const std::wstring &name, CallbackFunc action, UINT icon) {
     IAIMPMenuItem *newItem = nullptr;
     if (SUCCEEDED(m_core->CreateObject(IID_IAIMPMenuItem, reinterpret_cast<void **>(&newItem)))) {
@@ -30,6 +35,8 @@ IAIMPMenuItem *AimpMenu::Add(const std::wstring &name, CallbackFunc action, UINT
 
                 m_core->RegisterExtension(IID_IAIMPServiceActionManager, newAction);
                 newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_ACTION, newAction);
+
+                newAction->Release();
             }
         } else {
             newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_ID, new AIMPString(L"AIMPSoundcloud" + name));
@@ -56,6 +63,7 @@ IAIMPMenuItem *AimpMenu::Add(const std::wstring &name, CallbackFunc action, UINT
                         }
                     }
                 }
+                img->Release();
             }
         }
 
@@ -63,7 +71,7 @@ IAIMPMenuItem *AimpMenu::Add(const std::wstring &name, CallbackFunc action, UINT
         newItem->SetValueAsInt32(AIMP_MENUITEM_PROPID_VISIBLE, true);
 
         m_core->RegisterExtension(IID_IAIMPServiceMenuManager, newItem);
-        return newItem;// new AimpMenu(newItem); // TODO: check memory leak
+        return newItem;
     }
     return nullptr;
 }
@@ -80,4 +88,9 @@ bool AimpMenu::Init(IAIMPCore *Core) {
     m_core = Core;
 
     return SUCCEEDED(m_core->QueryInterface(IID_IAIMPServiceMenuManager, reinterpret_cast<void **>(&m_menuManager)));
+}
+
+void AimpMenu::Deinit() {
+    if (m_menuManager)
+        m_menuManager->Release();
 }

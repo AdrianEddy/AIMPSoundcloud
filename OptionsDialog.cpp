@@ -18,10 +18,9 @@
 extern HINSTANCE g_hInst;
 
 // CONTROL         "", IDC_AVATAR, WC_STATIC, SS_BITMAP | SS_REALSIZEIMAGE, 15, 20, 100, 100, WS_EX_LEFT
+
 // TODO: limit stream entries 
 // TODO: add duration to title
-// TODO: max recommended
-// TODO: track filter (permanent delete)
 
 OptionsDialog::OptionsDialog(AIMPSoundcloudPlugin *plugin) : m_plugin(plugin), m_handle(NULL) {
 

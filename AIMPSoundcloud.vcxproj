@@ -90,6 +90,7 @@
     <ClInclude Include="GdiPlusImageLoader.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="IUnknownInterfaceImpl.h" />
+    <ClInclude Include="MessageHook.h" />
     <ClInclude Include="OptionsDialog.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SoundCloudAPI.h" />
@@ -111,6 +112,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="MessageHook.cpp" />
     <ClCompile Include="OptionsDialog.cpp" />
     <ClCompile Include="SoundCloudAPI.cpp" />
     <ClCompile Include="TcpServer.cpp" />
