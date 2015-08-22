@@ -97,8 +97,8 @@ bool AimpHTTP::Delete(const std::wstring &url, CallbackFunc callback) {
     return RawRequest("DELETE", url, callback);
 }
 
-void AimpHTTP::ThreadFunc(void *args) {
-    ThreadParams *params = (ThreadParams*)args;
+void AimpHTTP::RawRequestThread(void *args) {
+    ThreadParams *params = static_cast<ThreadParams *>(args);
     std::string request = params->request;
     std::string host = params->host;
     AimpHTTP::CallbackFunc callback = params->callback;
@@ -183,7 +183,7 @@ bool AimpHTTP::RawRequest(const std::string &method, const std::wstring &url, Ca
             p->request += " HTTP/1.1\r\nHost: " + p->host + "\r\nConnection: close\r\n\r\n";
             p->callback = callback;
 
-            HANDLE hThread = (HANDLE)_beginthread(AimpHTTP::ThreadFunc, 0, p);
+            HANDLE hThread = (HANDLE)_beginthread(AimpHTTP::RawRequestThread, 0, p);
             return hThread != INVALID_HANDLE_VALUE;
         }
     }

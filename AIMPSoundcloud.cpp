@@ -26,38 +26,78 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
     m_accessToken = Config::GetString(L"AccessToken");
 
     if (AimpMenu *addMenu = AimpMenu::Get(AIMP_MENUID_PLAYER_PLAYLIST_ADDING)) {
-        addMenu->Add(L"SoundCloud URL", AddURLDialog::Show, IDB_ICON)->Release();
+        addMenu->Add(L"SoundCloud URL", [this](IAIMPMenuItem *) { AddURLDialog::Show(); }, IDB_ICON)->Release();
         delete addMenu;
     }
 
     if (AimpMenu *playlistMenu = AimpMenu::Get(AIMP_MENUID_PLAYER_PLAYLIST_MANAGE)) {
-        playlistMenu->Add(L"SoundCloud stream", SoundCloudAPI::LoadStream, IDB_ICON)->Release();
-        playlistMenu->Add(L"SoundCloud likes", SoundCloudAPI::LoadLikes, IDB_ICON)->Release();
+        playlistMenu->Add(L"SoundCloud stream", [this](IAIMPMenuItem *) {
+            if (!isConnected()) {
+                // TODO: connect
+                return;
+            }
+            SoundCloudAPI::LoadStream();
+        }, IDB_ICON)->Release();
+        playlistMenu->Add(L"SoundCloud likes", [this](IAIMPMenuItem *) {
+            if (!isConnected()) {
+                // TODO: connect
+                return;
+            }
+            SoundCloudAPI::LoadLikes();
+        }, IDB_ICON)->Release();
         delete playlistMenu;
     }
 
+    auto enableIfValid = [this](IAIMPMenuItem *item) {
+        int valid = 0;
+        ForSelectedTracks([&valid](IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t id) -> int {
+            if (id > 0) valid++;
+            return 0;
+        });
+
+        item->SetValueAsInt32(AIMP_MENUITEM_PROPID_VISIBLE, valid > 0);
+    };
+
     if (AimpMenu *contextMenu = AimpMenu::Get(AIMP_MENUID_PLAYER_PLAYLIST_CONTEXT_FUNCTIONS)) {
-        AimpMenu *recommendations = new AimpMenu(contextMenu->Add(L"Load recommendations", nullptr, IDB_ICON));
-        recommendations->Add(L"Here", [this] {
+        AimpMenu *recommendations = new AimpMenu(contextMenu->Add(L"Load recommendations", nullptr, IDB_ICON, enableIfValid));
+        recommendations->Add(L"Here", [this](IAIMPMenuItem *item) {
             ForSelectedTracks([](IAIMPPlaylist *pl, IAIMPPlaylistItem *item, int64_t id) -> int {
                 if (id > 0) {
-                    SoundCloudAPI::LoadRecommendations(id, false);
+                    SoundCloudAPI::LoadRecommendations(id, false, item);
                 }
                 return 0;
             });
         })->Release();
-        recommendations->Add(L"Create new playlist", [this] {
+        recommendations->Add(L"Create new playlist", [this](IAIMPMenuItem *item) {
             ForSelectedTracks([](IAIMPPlaylist *pl, IAIMPPlaylistItem *item, int64_t id) -> int {
                 if (id > 0) {
-                    SoundCloudAPI::LoadRecommendations(id, true);
+                    SoundCloudAPI::LoadRecommendations(id, true, item);
                 }
                 return 0;
             });
         })->Release();
         delete recommendations;
 
-        contextMenu->Add(L"Add to exclusions", [this] {
-            ForSelectedTracks([](IAIMPPlaylist *pl, IAIMPPlaylistItem *item, int64_t id) -> int {
+        contextMenu->Add(L"Open in web browser", [this](IAIMPMenuItem *) {
+            ForSelectedTracks([this](IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t id) -> int {
+                if (id > 0) {
+                    wchar_t url[256];
+                    wsprintf(url, L"https://api.soundcloud.com/tracks/%ld?client_id=" TEXT(CLIENT_ID) L"&oauth_token=", id);
+                    AimpHTTP::Get(url + m_accessToken, [this](unsigned char *data, int size) {
+                        rapidjson::Document d;
+                        d.Parse(reinterpret_cast<const char *>(data));
+
+                        if (d.IsObject() && d.HasMember("permalink_url")) {
+                            ShellExecuteA(GetMainWindowHandle(), "open", d["permalink_url"].GetString(), NULL, NULL, SW_SHOWNORMAL);
+                        }
+                    });
+                }
+                return 0;
+            });
+        }, IDB_ICON, enableIfValid)->Release();
+
+        contextMenu->Add(L"Add to exclusions", [this](IAIMPMenuItem *) {
+            ForSelectedTracks([](IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t id) -> int {
                 if (id > 0) {
                     Config::TrackExclusions.insert(id);
                     return FLAG_DELETE_ITEM;
@@ -65,27 +105,54 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
                 return 0;
             });
             Config::SaveExtendedConfig();
-        }, IDB_ICON)->Release();
+        }, IDB_ICON, enableIfValid)->Release();
 
-        contextMenu->Add(L"Unlike", [this] {
-            ForSelectedTracks([](IAIMPPlaylist *pl, IAIMPPlaylistItem *item, int64_t id) -> int {
+        contextMenu->Add(L"Like / Unlike", [this](IAIMPMenuItem *) {
+            ForSelectedTracks([](IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t id) -> int {
                 if (id > 0) {
-                    SoundCloudAPI::UnlikeSong(id);
+                    if (Config::Likes.find(id) != Config::Likes.end()) {
+                        SoundCloudAPI::UnlikeSong(id);
+                        Config::Likes.erase(id);
+                    } else {
+                        SoundCloudAPI::LikeSong(id);
+                        Config::Likes.insert(id);
+                        // TODO: should wait for result
+                        SoundCloudAPI::LoadLikes();
+                    }
                 }
                 return 0;
             });
-        }, IDB_ICON)->Release();
-
-        contextMenu->Add(L"Like", [this] {
-            ForSelectedTracks([](IAIMPPlaylist *pl, IAIMPPlaylistItem *item, int64_t id) -> int {
+            Config::SaveExtendedConfig();
+        }, IDB_ICON, [this](IAIMPMenuItem *item) {
+            int likes = 0;
+            int unlikes = 0;
+            int valid = 0;
+            ForSelectedTracks([&](IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t id) -> int {
                 if (id > 0) {
-                    SoundCloudAPI::LikeSong(id);
+                    valid++;
+                    if (Config::Likes.find(id) != Config::Likes.end()) {
+                        unlikes++;
+                    } else {
+                        likes++;
+                    }
                 }
                 return 0;
             });
-            // TODO: should wait for result
-            SoundCloudAPI::LoadLikes();
-        }, IDB_ICON)->Release();
+
+            if (valid == 0) {
+                item->SetValueAsInt32(AIMP_MENUITEM_PROPID_VISIBLE, false);
+                return;
+            }
+            item->SetValueAsInt32(AIMP_MENUITEM_PROPID_VISIBLE, true);
+
+            if (unlikes == 0) {
+                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, new AIMPString(L"Like"));
+            } else if (likes == 0) {
+                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, new AIMPString(L"Unlike"));
+            } else {
+                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, new AIMPString(L"Like / Unlike"));
+            }
+        })->Release();
         delete contextMenu;
     }
 

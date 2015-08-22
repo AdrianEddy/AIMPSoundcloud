@@ -10,17 +10,14 @@ extern HINSTANCE g_hInst;
 void AddURLDialog::Show() {
     HWND parent = Plugin::instance()->GetMainWindowHandle();
 
-    HWND handle = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_ADDURL), parent, DlgProc);
-    if (handle != NULL) {
-        ShowWindow(handle, SW_SHOW);
-    }
+    CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_ADDURL), parent, DlgProc);
 }
 
 BOOL CALLBACK AddURLDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
     switch (Msg) {
         case WM_CLOSE:
-            EndDialog(hwnd, 0);
-            break;
+            DestroyWindow(hwnd);
+        break;
         case WM_INITDIALOG: {
             SendDlgItemMessage(hwnd, IDC_CREATENEW, BM_SETCHECK, BST_CHECKED, NULL);
             GdiPlusImageLoader icon(IDB_ICON, L"PNG");
@@ -41,7 +38,7 @@ BOOL CALLBACK AddURLDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
                     bool createnew = SendDlgItemMessage(hwnd, IDC_CREATENEW, BM_GETCHECK, NULL, NULL) == BST_CHECKED;
 
                     SoundCloudAPI::ResolveUrl(url, playlistTitle, createnew);
-                    EndDialog(hwnd, 0);
+                    DestroyWindow(hwnd);
                 } break;
                 case IDC_CREATENEW:
                     if (HIWORD(wParam) == BN_CLICKED) {

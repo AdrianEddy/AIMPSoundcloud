@@ -13,6 +13,7 @@ IAIMPConfig *Config::m_config = nullptr;
 std::wstring Config::m_configFolder;
 
 std::unordered_set<int64_t> Config::TrackExclusions;
+std::unordered_set<int64_t> Config::Likes;
 std::set<Config::MonitorUrl> Config::MonitorUrls;
 
 bool Config::Init(IAIMPCore *core) {
@@ -78,6 +79,13 @@ void Config::SaveExtendedConfig() {
         }
         writer.EndArray();
 
+        writer.String(L"Likes");
+        writer.StartArray();
+        for (const auto &trackId : Likes) {
+            writer.Int64(trackId);
+        }
+        writer.EndArray();
+
         writer.String(L"MonitorURLs");
         writer.StartArray();
         for (const auto &monitorUrl : MonitorUrls) {
@@ -111,6 +119,14 @@ void Config::LoadExtendedConfig() {
                 if (v.IsArray()) {
                     for (auto x = v.Begin(), e = v.End(); x != e; x++) {
                         TrackExclusions.insert((*x).GetInt64());
+                    }
+                }
+            }
+            if (d.HasMember(L"Likes")) {
+                const GenericValue<UTF16<>> &v = d[L"Likes"];
+                if (v.IsArray()) {
+                    for (auto x = v.Begin(), e = v.End(); x != e; x++) {
+                        Likes.insert((*x).GetInt64());
                     }
                 }
             }

@@ -6,11 +6,11 @@
 #include <functional>
 
 class AimpMenu {
-    typedef std::function<void()> CallbackFunc;
+    typedef std::function<void(IAIMPMenuItem *)> CallbackFunc;
 
     class ClickHandler : public IUnknownInterfaceImpl<IAIMPActionEvent> {
     public:
-        ClickHandler(CallbackFunc callback) : m_callback(callback) { }
+        ClickHandler(CallbackFunc callback, IAIMPMenuItem *item) : m_menuItem(item), m_callback(callback) {}
 
         virtual HRESULT WINAPI QueryInterface(REFIID riid, LPVOID* ppvObj) {
             if (!ppvObj) return E_POINTER;
@@ -24,9 +24,10 @@ class AimpMenu {
             return E_NOINTERFACE;
         }
 
-        virtual void WINAPI OnExecute(IUnknown *Data) { if (m_callback) m_callback(); }
+        virtual void WINAPI OnExecute(IUnknown *Data) { if (m_callback) m_callback(m_menuItem); }
 
     private:
+        IAIMPMenuItem *m_menuItem;
         CallbackFunc m_callback;
     };
 
@@ -37,9 +38,10 @@ public:
     static bool Init(IAIMPCore *Core);
     static void Deinit();
 
-    IAIMPMenuItem *Add(const std::wstring &name, CallbackFunc action, UINT icon = 0);
+    IAIMPMenuItem *Add(const std::wstring &name, CallbackFunc action, UINT icon = 0, CallbackFunc showAction = nullptr);
 
     static AimpMenu *Get(int id);
+    static bool SetIcon(IAIMPMenuItem *item, UINT icon);
 
 private:
     AimpMenu(const AimpMenu &);

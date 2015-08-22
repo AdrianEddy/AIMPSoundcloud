@@ -70,6 +70,7 @@ public:
     static void SaveExtendedConfig();
     static void LoadExtendedConfig();
 
+    static std::unordered_set<int64_t> Likes;
     static std::unordered_set<int64_t> TrackExclusions;
     static std::set<MonitorUrl> MonitorUrls;
 
