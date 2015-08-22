@@ -35,18 +35,17 @@ IAIMPMenuItem *AimpMenu::Add(const std::wstring &name, CallbackFunc action, UINT
 
                 m_core->RegisterExtension(IID_IAIMPServiceActionManager, newAction);
                 newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_ACTION, newAction);
-                if (showAction) {
-                    newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_EVENT_ONSHOW, new ClickHandler(showAction, newItem));
-                }
+
                 newAction->Release();
             }
         } else {
             newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_ID, new AIMPString(L"AIMPSoundcloud" + name));
             newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, new AIMPString(name));
-            if (showAction) {
-                newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_EVENT_ONSHOW, new ClickHandler(showAction, newItem));
-            }
             newItem->SetValueAsInt32(AIMP_MENUITEM_PROPID_ENABLED, true);
+        }
+
+        if (showAction) {
+            newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_EVENT_ONSHOW, new ClickHandler(showAction, newItem));
         }
 
         if (icon > 0) {

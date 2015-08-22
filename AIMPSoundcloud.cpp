@@ -60,7 +60,7 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
 
     if (AimpMenu *contextMenu = AimpMenu::Get(AIMP_MENUID_PLAYER_PLAYLIST_CONTEXT_FUNCTIONS)) {
         AimpMenu *recommendations = new AimpMenu(contextMenu->Add(L"Load recommendations", nullptr, IDB_ICON, enableIfValid));
-        recommendations->Add(L"Here", [this](IAIMPMenuItem *item) {
+        recommendations->Add(L"Here", [this](IAIMPMenuItem *) {
             ForSelectedTracks([](IAIMPPlaylist *pl, IAIMPPlaylistItem *item, int64_t id) -> int {
                 if (id > 0) {
                     SoundCloudAPI::LoadRecommendations(id, false, item);
@@ -68,7 +68,7 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
                 return 0;
             });
         })->Release();
-        recommendations->Add(L"Create new playlist", [this](IAIMPMenuItem *item) {
+        recommendations->Add(L"Create new playlist", [this](IAIMPMenuItem *) {
             ForSelectedTracks([](IAIMPPlaylist *pl, IAIMPPlaylistItem *item, int64_t id) -> int {
                 if (id > 0) {
                     SoundCloudAPI::LoadRecommendations(id, true, item);

@@ -136,54 +136,38 @@ void SoundCloudAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, Loadi
     url += L"client_id=" TEXT(CLIENT_ID) L"&oauth_token=" + Plugin::instance()->getAccessToken();
 
     AimpHTTP::Get(url, [playlist, state](unsigned char *data, int size) {
-        playlist->BeginUpdate();
         rapidjson::Document d;
         d.Parse(reinterpret_cast<const char *>(data));
 
+        playlist->BeginUpdate();
         if (d.IsObject() && d.HasMember("collection")) {
             AddFromJson(playlist, d["collection"], state);
         } else {
             AddFromJson(playlist, d, state);
         }
-
-        bool hasAnyPending = false;
+        playlist->EndUpdate();
 
         if (d.IsObject() && d.HasMember("next_href")) {
             LoadFromUrl(Tools::ToWString(d["next_href"]), playlist, state);
-            hasAnyPending = true;
         } else if (state->Flags & LoadingState::LoadingLikes && d.IsArray() && d.Size() > 0) {
             state->Offset += 200;
-            wchar_t url[256];
-            wsprintf(url, L"https://api.soundcloud.com/me/favorites?limit=200&offset=%ld", state->Offset);
-            LoadFromUrl(url, playlist, state);
-            hasAnyPending = true;
+            LoadFromUrl(L"https://api.soundcloud.com/me/favorites?limit=200&offset=" + std::to_wstring(state->Offset), playlist, state);
+        } else if (!state->PendingPlaylists.empty()) {
+            const LoadingState::PendingPlaylist &pl = state->PendingPlaylists.front();
+            state->InsertPos = pl.PlaylistPosition;
+            state->Flags = LoadingState::UpdateAdditionalPos;
+            state->ReferenceName = pl.Title;
+            LoadFromUrl(pl.Url, playlist, state);
+            state->PendingPlaylists.pop();
+        } else if (!state->PendingUrl.empty()) {
+            if (state->PendingPos > -3) {
+                state->InsertPos = state->PendingPos;
+                state->PendingPos = -3; // reset it
+            }
+
+            LoadFromUrl(state->PendingUrl, playlist, state);
+            state->PendingUrl.clear();
         } else {
-            if (!state->PendingPlaylists.empty()) {
-                const LoadingState::PendingPlaylist &pl = state->PendingPlaylists.front();
-                state->InsertPos = pl.PlaylistPosition;
-                state->Flags = LoadingState::UpdateAdditionalPos;
-                state->ReferenceName = pl.Title;
-                LoadFromUrl(pl.Url, playlist, state);
-                state->PendingPlaylists.pop();
-
-                hasAnyPending = true;
-            }
-            if (!state->PendingUrl.empty()) {
-                if (state->PendingPos > -3) {
-                    state->InsertPos = state->PendingPos;
-                    state->PendingPos = -3; // reset it
-                }
-
-                LoadFromUrl(state->PendingUrl, playlist, state);
-                state->PendingUrl.clear();
-
-                hasAnyPending = true;
-            }
-        }
-
-        playlist->EndUpdate();
-
-        if (!hasAnyPending) {
             // Finished
             if (state->Flags & LoadingState::LoadingLikes) {
                 Config::SaveExtendedConfig();
@@ -281,7 +265,7 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
                 }
             }
 
-            IAIMPPlaylist *pl = Plugin::instance()->GetCurrentPlaylist();
+            IAIMPPlaylist *pl = nullptr;
             std::wstring finalPlaylistName;
             if (createPlaylist) {
                 finalPlaylistName = playlistTitle.empty() ? plName : playlistTitle;
