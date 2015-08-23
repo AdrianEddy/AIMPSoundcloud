@@ -248,7 +248,7 @@ LRESULT CALLBACK OptionsDialog::FrameProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
             DeleteObject(captionFont);
             break;
         case WM_NCDESTROY:
-            RemoveWindowSubclass(hWnd, ButtonProc, uIdSubclass);
+            RemoveWindowSubclass(hWnd, FrameProc, uIdSubclass);
             break;
     }
     return DefSubclassProc(hWnd, uMsg, wParam, lParam);
