@@ -10,7 +10,7 @@
 #include "rapidjson/filewritestream.h"
 
 #define CLIENT_ID        "7ab49ecff90c309cd51cab81c1f5baed"
-#define STREAM_CLIENT_ID "b45b1aa10f1ac2941910a7f0d10f8e28"
+#define STREAM_CLIENT_ID "40ccfee680a844780a41fbe23ea89934"
 #define CLIENT_SECRET    "7a4d4f50405fdf80e5446d319c14c6fa"
 
 class Config {
