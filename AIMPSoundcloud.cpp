@@ -2,6 +2,7 @@
 
 #include "AIMPString.h"
 #include "SDK/apiPlayer.h"
+#include "Timer.h"
 
 HRESULT __declspec(dllexport) WINAPI AIMPPluginGetHeader(IAIMPPlugin **Header) {
     *Header = Plugin::instance();
@@ -116,12 +117,11 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
                     } else {
                         SoundCloudAPI::LikeSong(id);
                         Config::Likes.insert(id);
-                        // TODO: should wait for result
-                        SoundCloudAPI::LoadLikes();
                     }
                 }
                 return 0;
             });
+            Timer::SingleShot(1000, SoundCloudAPI::LoadLikes);
             Config::SaveExtendedConfig();
         }, IDB_ICON, [this](IAIMPMenuItem *item) {
             int likes = 0;

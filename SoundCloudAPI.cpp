@@ -10,15 +10,12 @@
 #include <string>
 
 void SoundCloudAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d, LoadingState *state) {
-    if (!playlist)
+    if (!playlist || !state)
         return;
 
-    int insertAt = 0; 
-    if (state) {
-        insertAt = state->InsertPos;
-        if (insertAt >= 0)
-            insertAt += state->AdditionalPos;
-    }
+    int insertAt = state->InsertPos;
+    if (insertAt >= 0)
+        insertAt += state->AdditionalPos;
 
     IAIMPFileInfo *file_info = nullptr;
     if (Plugin::instance()->core()->CreateObject(IID_IAIMPFileInfo, reinterpret_cast<void **>(&file_info)) == S_OK) {
@@ -31,14 +28,11 @@ void SoundCloudAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value 
             int64_t trackId = item["id"].GetInt64();
             if (state->TrackIds.find(trackId) != state->TrackIds.end()) {
                 // Already added earlier
-                if (insertAt >= 0) {
-                    if (!(state->Flags & LoadingState::IgnoreExistingPosition))
-                        insertAt++;
-                    if (state) {
-                        state->InsertPos++;
-                        if (state->Flags & LoadingState::UpdateAdditionalPos && !(state->Flags & LoadingState::IgnoreExistingPosition))
-                            state->AdditionalPos++;
-                    }
+                if (insertAt >= 0 && !(state->Flags & LoadingState::IgnoreExistingPosition)) {
+                    insertAt++;
+                    state->InsertPos++;
+                    if (state->Flags & LoadingState::UpdateAdditionalPos)
+                        state->AdditionalPos++;
                 }
                 return;
             }
@@ -51,7 +45,7 @@ void SoundCloudAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value 
                 Config::Likes.insert(trackId);
             }
 
-            if (state && strcmp(item["kind"].GetString(), "playlist") == 0) {
+            if (strcmp(item["kind"].GetString(), "playlist") == 0) {
                 DebugA("Adding pending playlist %s\n", item["title"].GetString());
                 std::wstring url = Tools::ToWString(item["tracks_uri"]);
                 std::wstring title = Tools::ToWString(item["user"]["username"]) + L" - " + Tools::ToWString(item["title"]);
@@ -59,14 +53,15 @@ void SoundCloudAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value 
                 return;
             }
 
-            if (!item.HasMember("stream_url")) {
-                wchar_t stream_url[256];
-                wsprintf(stream_url, L"https://api.soundcloud.com/tracks/%ld/stream?client_id=" TEXT(STREAM_CLIENT_ID), trackId);
+            std::wstring stream_url;
+            if (item.HasMember("stream_url")) 
+                stream_url = Tools::ToWString(item["stream_url"]);
 
-                file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_FILENAME, new AIMPString(stream_url));
-            } else {
-                file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_FILENAME, new AIMPString(Tools::ToWString(item["stream_url"]) + L"?client_id=" TEXT(STREAM_CLIENT_ID)));
-            }
+            if (stream_url.empty())
+                stream_url = L"https://api.soundcloud.com/tracks/" + std::to_wstring(trackId) + L"/stream";
+
+            stream_url += L"?client_id=" TEXT(STREAM_CLIENT_ID);
+            file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_FILENAME, new AIMPString(stream_url));
 
             if (!state->ReferenceName.empty()) {
                 file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_ALBUM, new AIMPString(state->ReferenceName));
@@ -84,11 +79,9 @@ void SoundCloudAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value 
             if (SUCCEEDED(playlist->Add(file_info, flags, insertAt))) {
                 if (insertAt >= 0) {
                     insertAt++;
-                    if (state) {
-                        state->InsertPos++;
-                        if (state->Flags & LoadingState::UpdateAdditionalPos)
-                            state->AdditionalPos++;
-                    }
+                    state->InsertPos++;
+                    if (state->Flags & LoadingState::UpdateAdditionalPos)
+                        state->AdditionalPos++;
                 }
             }
 
@@ -128,10 +121,10 @@ void SoundCloudAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, Loadi
     if (!playlist || !state)
         return;
 
-    if (url.find(L"?") == std::wstring::npos) {
-        url += L"?";
-    }  else {
-        url += L"&";
+    if (url.find(L'?') == std::wstring::npos) {
+        url += L'?';
+    } else {
+        url += L'&';
     }
     url += L"client_id=" TEXT(CLIENT_ID) L"&oauth_token=" + Plugin::instance()->getAccessToken();
 
@@ -211,7 +204,7 @@ void SoundCloudAPI::GetExistingTrackIds(IAIMPPlaylist *pl, LoadingState *state) 
         return;
 
     // Fetch current track ids from playlist
-    Plugin::instance()->ForEveryItem(pl, [&](IAIMPPlaylistItem *item, IAIMPFileInfo *info, int64_t id) -> int {
+    Plugin::instance()->ForEveryItem(pl, [&](IAIMPPlaylistItem *, IAIMPFileInfo *, int64_t id) -> int {
         if (id > 0) {
             state->TrackIds.insert(id);
         }
@@ -220,7 +213,7 @@ void SoundCloudAPI::GetExistingTrackIds(IAIMPPlaylist *pl, LoadingState *state) 
 }
 
 void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &playlistTitle, bool createPlaylist) {
-    if (url.find(L"/stream") != std::wstring::npos) {
+    if (url.find(L"soundcloud.com/stream") != std::wstring::npos) {
         LoadStream();
         return;
     }
@@ -242,8 +235,8 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
             } else {
                 if (strcmp(d["kind"].GetString(), "user") == 0) {
                     plName = L"Soundcloud - " + Tools::ToWString(d["username"]);
-                    std::wstring base = L"https://api.soundcloud.com/users/" + std::to_wstring(d["id"].GetInt64());
 
+                    std::wstring base = L"https://api.soundcloud.com/users/" + std::to_wstring(d["id"].GetInt64());
                     finalUrl = base + L"/playlists";
                     secondUrl = base + L"/tracks";
 
@@ -255,13 +248,17 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
                     } else {
                         plName = Tools::ToWString(d["title"]);
                         addDirectly = &d;
+
                         monitor = false;
                     }
                 } else if (strcmp(d["kind"].GetString(), "playlist") == 0 && d.HasMember("tracks")) {
                     plName = Tools::ToWString(d["user"]["username"]) + L" - " + Tools::ToWString(d["title"]);
-                    addDirectly = &(d["tracks"]);
+                    addDirectly = &d["tracks"];
 
                     finalUrl = L"https://api.soundcloud.com/playlists/" + std::to_wstring(d["id"].GetInt64());
+                } else {
+                    MessageBox(Plugin::instance()->GetMainWindowHandle(), L"Could not resolve this url.", L"Error", MB_OK | MB_ICONERROR);
+                    return;
                 }
             }
 
@@ -306,6 +303,9 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
                 Config::MonitorUrls.insert({ finalUrl, finalPlaylistName, plName });
                 Config::SaveExtendedConfig();
             }
+        } else {
+            MessageBox(Plugin::instance()->GetMainWindowHandle(), L"Could not resolve this url.", L"Error", MB_OK | MB_ICONERROR);
+            return;
         }
     });
 }

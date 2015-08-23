@@ -95,6 +95,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="SoundCloudAPI.h" />
     <ClInclude Include="TcpServer.h" />
+    <ClInclude Include="Timer.h" />
     <ClInclude Include="Tools.h" />
   </ItemGroup>
   <ItemGroup>
@@ -116,6 +117,7 @@
     <ClCompile Include="OptionsDialog.cpp" />
     <ClCompile Include="SoundCloudAPI.cpp" />
     <ClCompile Include="TcpServer.cpp" />
+    <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Tools.cpp" />
   </ItemGroup>
   <ItemGroup>
