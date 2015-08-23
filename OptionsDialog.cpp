@@ -164,6 +164,96 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
     return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
+LRESULT CALLBACK OptionsDialog::FrameProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
+    static OptionsDialog *dialog = nullptr;
+    static HBRUSH bgBrush;
+    static HPEN penOuter;
+    static HPEN penInner;
+    static RECT rect;
+    static RECT captionRect;
+    static HFONT captionFont;
+    static TRIVERTEX gradient[2];
+    static wchar_t text[64];
+
+    if (!dialog) {
+        dialog = (OptionsDialog *)dwRefData;
+
+        GetWindowText(hWnd, text, 64);
+
+        bgBrush = CreateSolidBrush(RGB(240, 240, 240));
+        penOuter = CreatePen(PS_SOLID, 1, RGB(188, 188, 188));
+        penInner = CreatePen(PS_SOLID, 1, RGB(255, 255, 255));
+        captionFont = CreateFont(13, 0, 0, 0, FW_BLACK, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN, L"Tahoma");
+
+        GetClientRect(hWnd, &rect);
+        rect.right += 7;
+        rect.bottom += 11;
+
+        captionRect = rect;
+        captionRect.bottom = 21;
+
+        gradient[0].x = 1;
+        gradient[0].y = 1;
+        gradient[0].Red = 255 * 256;
+        gradient[0].Green = 136 * 256;
+        gradient[0].Blue = 0 * 256;
+        gradient[0].Alpha = 0xffff;
+
+        gradient[1].x = rect.right - 1;
+        gradient[1].y = captionRect.bottom;
+        gradient[1].Red = 255 * 256;
+        gradient[1].Green = 51 * 256;
+        gradient[1].Blue = 0 * 256;
+        gradient[1].Alpha = 0xffff;
+    }
+
+    switch (uMsg) {
+        case WM_ERASEBKGND:
+            return TRUE;
+
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+            SelectObject(hdc, bgBrush);
+
+            // Outer frame
+            SelectObject(hdc, penOuter);
+            Rectangle(hdc, rect.left, rect.top, rect.right, rect.bottom);
+
+            SelectObject(hdc, penInner);
+            Rectangle(hdc, rect.left + 1, rect.top + 1, rect.right - 1, rect.bottom - 1);
+
+            // Caption
+            SelectObject(hdc, penOuter);
+            Rectangle(hdc, rect.left, rect.top, rect.right, captionRect.bottom + 1);
+
+            GRADIENT_RECT r;
+            r.UpperLeft = 0;
+            r.LowerRight = 1;
+            GradientFill(hdc, gradient, 2, &r, 1, GRADIENT_FILL_RECT_V);
+
+            SetTextColor(hdc, 0x00ffffff);
+            SetBkMode(hdc, TRANSPARENT);
+
+            SelectObject(hdc, captionFont);
+            DrawText(hdc, text, wcslen(text), &captionRect, DT_NOCLIP | DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+            EndPaint(hWnd, &ps);
+            return TRUE;
+        }
+        case WM_DESTROY:
+            DeleteObject(bgBrush);
+            DeleteObject(penOuter);
+            DeleteObject(penInner);
+            DeleteObject(captionFont);
+            break;
+        case WM_NCDESTROY:
+            RemoveWindowSubclass(hWnd, ButtonProc, uIdSubclass);
+            break;
+    }
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
 BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
     static OptionsDialog *dialog = nullptr;
     static Plugin *plugin = nullptr;
@@ -174,8 +264,8 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             dialog->m_handle = hwnd;
             plugin = dialog->m_plugin;
 
-            HWND btn = GetDlgItem(hwnd, IDC_CONNECTBTN);
-            SetWindowSubclass(btn, ButtonProc, 0, /*OptionsDialog*/lParam);
+            SetWindowSubclass(GetDlgItem(hwnd, IDC_CONNECTBTN), ButtonProc, 0, /*OptionsDialog*/lParam);
+            SetWindowSubclass(GetDlgItem(hwnd, IDC_MAINFRAME), FrameProc, 0, /*OptionsDialog*/lParam);
 
             dialog->LoadProfileInfo();
 

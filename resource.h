@@ -15,3 +15,4 @@
 #define IDC_PLAYLISTTITLE                       1009
 #define IDC_PLAYLISTTITLECAPTION                1010
 #define IDC_CREATENEW                           1011
+#define IDC_MAINFRAME                           40000
