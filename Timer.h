@@ -42,5 +42,4 @@ private:
         bool IsSingleShot;
     };
     static std::map<UINT_PTR, TimerInfo> m_timers;
-    static UINT_PTR m_maxTaskId;
 };

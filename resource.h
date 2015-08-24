@@ -16,3 +16,17 @@
 #define IDC_PLAYLISTTITLECAPTION                1010
 #define IDC_CREATENEW                           1011
 #define IDC_MAINFRAME                           40000
+#define IDC_AUTHGROUPBOX                        40001
+#define IDC_USERINFO                            40002
+#define IDC_ADDDURATION                         40003
+#define IDC_GENERALGROUPBOX                     40004
+#define IDC_CHECKONSTARTUP                      40005
+#define IDC_MONITORGROUPBOX                     40006
+#define IDC_CHECKEVERY                          40007
+#define IDC_HOURS                               40008
+#define IDC_CHECKEVERYVALUE                     40009
+#define IDC_CHECKEVERYVALUESPIN                 40010
+#define IDC_LIMITSTREAM                         40011
+#define IDC_LIMITSTREAMVALUE                    40012
+#define IDC_LIMITSTREAMVALUESPIN                40013
+#define IDC_TRACKS                              40014

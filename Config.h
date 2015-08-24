@@ -61,9 +61,11 @@ public:
 
     static void SetString(const std::wstring &name, const std::wstring &value);
     static void SetInt64(const std::wstring &name, const int64_t &value);
+    static void SetInt32(const std::wstring &name, const int32_t &value);
 
     static std::wstring GetString(const std::wstring &name, const std::wstring &def = std::wstring());
     static int64_t GetInt64(const std::wstring &name, const int64_t &def = 0);
+    static int32_t GetInt32(const std::wstring &name, const int32_t &def = 0);
 
     static inline std::wstring PluginConfigFolder() { return m_configFolder; }
 

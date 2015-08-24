@@ -43,6 +43,10 @@ void Config::SetInt64(const std::wstring &name, const int64_t &value) {
     m_config->SetValueAsInt64(new AIMPString(L"Soundcloud\\" + name), value);
 }
 
+void Config::SetInt32(const std::wstring &name, const int32_t &value) {
+    m_config->SetValueAsInt32(new AIMPString(L"Soundcloud\\" + name), value);
+}
+
 std::wstring Config::GetString(const std::wstring &name, const std::wstring &def) {
     IAIMPString *str = nullptr;
     if (SUCCEEDED(m_config->GetValueAsString(new AIMPString(L"Soundcloud\\" + name), &str)) && str) {
@@ -56,6 +60,14 @@ std::wstring Config::GetString(const std::wstring &name, const std::wstring &def
 int64_t Config::GetInt64(const std::wstring &name, const int64_t &def) {
     int64_t val = 0;
     if (SUCCEEDED(m_config->GetValueAsInt64(new AIMPString(L"Soundcloud\\" + name), &val))) {
+        return val;
+    }
+    return def;
+}
+
+int32_t Config::GetInt32(const std::wstring &name, const int32_t &def) {
+    int32_t val = 0;
+    if (SUCCEEDED(m_config->GetValueAsInt32(new AIMPString(L"Soundcloud\\" + name), &val))) {
         return val;
     }
     return def;
