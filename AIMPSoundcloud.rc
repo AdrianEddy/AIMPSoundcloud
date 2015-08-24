@@ -11,6 +11,11 @@
 
 
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+IDR_CONNECTRES1    CONNECTRESP    "Resources\\connect_status.html"
+
+
+
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 IDB_CONNECT        PNG            "Resources\\btn-connect-l.png"
 
 

@@ -122,6 +122,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="AIMPSoundcloud.def" />
+    <None Include="Resources\connect_status.html" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AIMPSoundcloud.rc" />

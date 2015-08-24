@@ -13,6 +13,8 @@ struct Tools {
     static std::wstring ToWString(const char *);
     static std::wstring ToWString(const rapidjson::Value &);
 
+    static void ReplaceString(const std::string &search, const std::string &replace, std::string &subject);
+
     static int64_t TrackIdFromUrl(const std::wstring &);
 
     static std::wstring UrlEncode(const std::wstring &);

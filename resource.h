@@ -7,6 +7,7 @@
 #define IDB_DISCONNECT                          109
 #define IDB_ICON                                110
 #define IDD_ADDURL                              112
+#define IDR_CONNECTRES1                         113
 #define IDC_CONNECTBTN                          1001
 #define IDC_AVATAR                              1005
 #define IDC_USERNAME                            1006

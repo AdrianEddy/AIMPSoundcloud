@@ -48,10 +48,10 @@ void TcpServer::ThreadFunc(void *arg) {
 
         recv(new_socket, request, sizeof(request), 0);
 
-        char *response;
-        if (parent->m_callback(parent, request, &response)) {
-            if (response) {
-                send(new_socket, response, strlen(response), 0);
+        std::string response;
+        if (parent->m_callback(parent, request, response)) {
+            if (!response.empty()) {
+                send(new_socket, response.c_str(), response.size(), 0);
             }
             closesocket(new_socket);
             closesocket(s);

@@ -110,7 +110,7 @@ inline Gdiplus::Bitmap *getConnectBtnImage(bool connected) {
 }
 
 void OptionsDialog::LoadProfileInfo() {
-    if (m_userId > 0) {
+    if (m_userId > 0 || m_plugin->getAccessToken().empty()) {
         UpdateProfileInfo();
         return;
     }
@@ -483,25 +483,23 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             switch (LOWORD(wParam)) {
                 case IDC_CONNECTBTN: 
                     if (!plugin->isConnected()) {
-                        #define RESP(Title, Text) \
-                            *response = "HTTP/1.1 200 OK\r\n" \
-                                        "Content-Type: text/html\r\n" \
-                                        "Connection: close\r\n" \
-                                        "Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0\r\n" \
-                                        "Pragma: no-cache\r\n" \
-                                        "Server: AIMPSoundcloud plugin\r\n" \
-                                        "\r\n" \
-                                        "<html><head><title>" Title "</title>" \
-                                        "<style>" \
-                                        "body { padding-top: 50pt; }" \
-                                        "p,h1 { font-family: Verdana,Arial,sans-serif; text-align: center; font-size: 14pt; }" \
-                                        "h1   { font-size: 22pt; }" \
-                                        "</style></head><body>" \
-                                        "<h1>" Title "</h1>" \
-                                        "<p>" Text "</p>" \
-                                        "<script type=\"text/javascript\">window.open('', '_self', ''), window.close();</script></body></html>"
+                        (new TcpServer(38916, [] (TcpServer *s, char *request, std::string &response) -> bool {
+                            response = "HTTP/1.1 200 OK\r\n"
+                                       "Content-Type: text/html\r\n"
+                                       "Connection: close\r\n"
+                                       "Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0\r\n"
+                                       "Pragma: no-cache\r\n"
+                                       "Server: AIMPSoundcloud plugin\r\n"
+                                       "\r\n";
 
-                        (new TcpServer(38916, [] (TcpServer *s, char *request, char **response) -> bool {
+                            if (HRSRC hResource = ::FindResource(g_hInst, MAKEINTRESOURCE(IDR_CONNECTRES1), L"CONNECTRESP")) {
+                                if (DWORD dataSize = ::SizeofResource(g_hInst, hResource)) {
+                                    if (void *pResourceData = ::LockResource(::LoadResource(g_hInst, hResource))) {
+                                        response += std::string(reinterpret_cast<char *>(pResourceData), dataSize);
+                                    }
+                                }
+                            }
+
                             char *token = strstr(request, "code=");
                             if (token) {
                                 token += 5;
@@ -524,15 +522,15 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                                     }
                                 });
 
-                                RESP("Authorization Granted", "You may now close this browser window and return to AIMP.");
+                                Tools::ReplaceString("%TITLE%", "Authorization granted", response);
+                                Tools::ReplaceString("%TEXT%", "You may now close this browser window and return to AIMP.", response);
                                 return true;
                             }
 
-                            RESP("Error occured", "Couldn't connect to SoundCloud account.");
+                            Tools::ReplaceString("%TITLE%", "Sorry, an error occurred", response);
+                            Tools::ReplaceString("%TEXT%", "Couldn't connect to SoundCloud account. Please return to AIMP and try again.", response);
                             return true;
                         }))->Start();
-
-                        #undef RESP
 
                         ShellExecuteA(dialog->m_handle, "open", "https://soundcloud.com/connect?client_id=" CLIENT_ID "&redirect_uri=http%3A%2F%2Flocalhost%3A38916%2F&response_type=code&scope=non-expiring", NULL, NULL, SW_SHOWNORMAL);
                     } else {

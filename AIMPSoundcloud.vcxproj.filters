@@ -106,6 +106,9 @@
     <None Include="AIMPSoundcloud.def">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="Resources\connect_status.html">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AIMPSoundcloud.rc">

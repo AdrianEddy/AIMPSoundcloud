@@ -3,7 +3,7 @@
 #include <functional>
 
 class TcpServer {
-    typedef std::function<bool(TcpServer *, char *, char **)> RequestFunc;
+    typedef std::function<bool(TcpServer *, char *, std::string &)> RequestFunc;
 
 public:
     TcpServer(int port, RequestFunc callback);
