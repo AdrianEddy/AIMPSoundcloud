@@ -50,10 +50,11 @@ public:
 
     }
 
-    IAIMPPlaylist *GetPlaylist(const std::wstring &playlistName, bool activate = true);
+    IAIMPPlaylist *GetPlaylist(const std::wstring &playlistName, bool activate = true, bool create = true);
     IAIMPPlaylist *GetPlaylistById(const std::wstring &playlistId, bool activate = false);
     IAIMPPlaylist *GetCurrentPlaylist();
     IAIMPPlaylist *UpdatePlaylistGrouping(IAIMPPlaylist *pl);
+    std::wstring PlaylistId(IAIMPPlaylist *pl);
     IAIMPPlaylistItem *GetCurrentTrack();
 
     enum CallbackFlags {

@@ -40,6 +40,11 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
     }
 
     if (AimpMenu *playlistMenu = AimpMenu::Get(AIMP_MENUID_PLAYER_PLAYLIST_MANAGE)) {
+        playlistMenu->Add(L"My tracks and playlists", [this](IAIMPMenuItem *) {
+            SoundCloudAPI::LoadMyTracksAndPlaylists();
+        }, IDB_ICON, [this](IAIMPMenuItem *item) {
+            item->SetValueAsInt32(AIMP_MENUITEM_PROPID_VISIBLE, isConnected());
+        })->Release();
         playlistMenu->Add(L"SoundCloud stream", [this](IAIMPMenuItem *) {
             if (!isConnected()) {
                 OptionsDialog::Connect(SoundCloudAPI::LoadStream);
@@ -198,13 +203,6 @@ void Plugin::StartMonitorTimer() {
 
     KillMonitorTimer();
     if (enabled) {
-        m_monitorPendingUrls.swap(decltype(m_monitorPendingUrls)());
-
-        for (const auto &x : Config::MonitorUrls) {
-            m_monitorPendingUrls.push(x);
-        }
-        // TODO: add likes and stream
-
         m_monitorTimer = Timer::Schedule(Config::GetInt32(L"CheckEveryHours", 1) * 60 * 60 * 1000, MonitorCallback);
     }
 }
@@ -217,20 +215,54 @@ void Plugin::KillMonitorTimer() {
 }
 
 void Plugin::MonitorCallback() {
+    if (m_instance->m_monitorPendingUrls.empty()) {
+        for (const auto &x : Config::MonitorUrls) {
+            m_instance->m_monitorPendingUrls.push(x);
+        }
+        if (m_instance->isConnected() && Config::GetInt32(L"MonitorLikes", 1)) {
+            if (IAIMPPlaylist *pl = m_instance->GetPlaylist(L"Soundcloud - Likes", false)) {
+                std::wstring playlistId = m_instance->PlaylistId(pl);
+                pl->Release();
+                if (!playlistId.empty()) {
+                    std::wstring refName = Config::GetString(L"UserName") + L"'s likes";
+
+                    m_instance->m_monitorPendingUrls.push({ L"https://api.soundcloud.com/me/favorites?limit=200", playlistId, SoundCloudAPI::LoadingState::LoadingLikes, refName });
+                }
+            }
+        }
+        if (m_instance->isConnected() && Config::GetInt32(L"MonitorStream", 1)) {
+            if (IAIMPPlaylist *pl = m_instance->GetPlaylist(L"Soundcloud - Stream", false)) {
+                std::wstring playlistId = m_instance->PlaylistId(pl);
+                pl->Release();
+                if (!playlistId.empty()) {
+                    std::wstring refName = Config::GetString(L"UserName") + L"'s stream";
+                    const int flags = SoundCloudAPI::LoadingState::IgnoreExistingPosition | SoundCloudAPI::LoadingState::IgnoreNextPage;
+
+                    m_instance->m_monitorPendingUrls.push({ L"https://api.soundcloud.com/me/activities?limit=300", playlistId, flags, refName });
+                }
+            }
+        }
+    } 
     if (!m_instance->m_monitorPendingUrls.empty()) {
         const Config::MonitorUrl &url = m_instance->m_monitorPendingUrls.front();
         IAIMPPlaylist *pl = m_instance->GetPlaylistById(url.PlaylistID, false);
         if (!pl) {
             m_instance->m_monitorPendingUrls.pop();
-            MonitorCallback();
+            if (!m_instance->m_monitorPendingUrls.empty())
+                MonitorCallback();
             return;
         }
 
         SoundCloudAPI::LoadingState *state = new SoundCloudAPI::LoadingState();
         state->ReferenceName = url.GroupName;
+        state->Flags = url.Flags;
 
         SoundCloudAPI::GetExistingTrackIds(pl, state);
-        SoundCloudAPI::LoadFromUrl(url.URL, pl, state, MonitorCallback);
+        if (m_instance->m_monitorPendingUrls.size() > 1) {
+            SoundCloudAPI::LoadFromUrl(url.URL, pl, state, MonitorCallback);
+        } else {
+            SoundCloudAPI::LoadFromUrl(url.URL, pl, state); // last one without callback
+        }
         m_instance->m_monitorPendingUrls.pop();
     }
 }
@@ -262,14 +294,14 @@ IAIMPPlaylist *Plugin::GetPlaylistById(const std::wstring &playlistId, bool acti
 }
 
 
-IAIMPPlaylist *Plugin::GetPlaylist(const std::wstring &playlistName, bool activate) {
+IAIMPPlaylist *Plugin::GetPlaylist(const std::wstring &playlistName, bool activate, bool create) {
     IAIMPPlaylist *playlistPointer = nullptr;
     if (SUCCEEDED(m_playlistManager->GetLoadedPlaylistByName(new AIMPString(playlistName), &playlistPointer)) && playlistPointer) {
         if (activate)
             m_playlistManager->SetActivePlaylist(playlistPointer);
 
         return UpdatePlaylistGrouping(playlistPointer);
-    } else {
+    } else if (create) {
         if (SUCCEEDED(m_playlistManager->CreatePlaylist(new AIMPString(playlistName), activate, &playlistPointer)))
             return UpdatePlaylistGrouping(playlistPointer);
     }
@@ -297,6 +329,20 @@ IAIMPPlaylist *Plugin::UpdatePlaylistGrouping(IAIMPPlaylist *pl) {
         plProp->Release();
     }
     return pl;
+}
+
+std::wstring Plugin::PlaylistId(IAIMPPlaylist *pl) {
+    std::wstring playlistId;
+    IAIMPPropertyList *plProp = nullptr;
+    if (SUCCEEDED(pl->QueryInterface(IID_IAIMPPropertyList, reinterpret_cast<void **>(&plProp)))) {
+        IAIMPString *id = nullptr;
+        if (SUCCEEDED(plProp->GetValueAsObject(AIMP_PLAYLIST_PROPID_ID, IID_IAIMPString, reinterpret_cast<void **>(&id)))) {
+            playlistId = id->GetData();
+            id->Release();
+        }
+        plProp->Release();
+    }
+    return playlistId;
 }
 
 IAIMPPlaylistItem *Plugin::GetCurrentTrack() {

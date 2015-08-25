@@ -21,7 +21,8 @@ public:
             None                   = 0x00,
             UpdateAdditionalPos    = 0x01,
             LoadingLikes           = 0x02,
-            IgnoreExistingPosition = 0x04
+            IgnoreExistingPosition = 0x04,
+            IgnoreNextPage         = 0x08
         };
         std::unordered_set<int64_t> TrackIds;
         std::queue<PendingUrl> PendingUrls;
@@ -36,6 +37,7 @@ public:
 
     static void LoadLikes();
     static void LoadStream();
+    static void LoadMyTracksAndPlaylists();
 
     static void LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, LoadingState *state, std::function<void()> finishCallback = std::function<void()>());
     static void ResolveUrl(const std::wstring &url, const std::wstring &playlistTitle = std::wstring(), bool createPlaylist = true);

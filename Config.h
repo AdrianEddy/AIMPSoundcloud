@@ -18,17 +18,21 @@ public:
     struct MonitorUrl {
         std::wstring URL;
         std::wstring PlaylistID;
+        int Flags;
         std::wstring GroupName;
 
         typedef rapidjson::PrettyWriter<rapidjson::FileWriteStream, rapidjson::UTF16<>> Writer;
         typedef rapidjson::GenericValue<rapidjson::UTF16<>> Value;
 
-        MonitorUrl(const std::wstring &url, const std::wstring &playlistID, const std::wstring &groupName = std::wstring())
-            : URL(url), PlaylistID(playlistID), GroupName(groupName) {
+        MonitorUrl(const std::wstring &url, const std::wstring &playlistID, int flags, const std::wstring &groupName = std::wstring())
+            : URL(url), PlaylistID(playlistID), Flags(flags), GroupName(groupName) {
+
         }
+
         MonitorUrl(const Value &v) {
             if (v.IsObject()) {
                 URL = v[L"URL"].GetString();
+                Flags = v[L"Flags"].GetInt();
                 PlaylistID = v[L"PlaylistID"].GetString();
                 GroupName = v[L"GroupName"].GetString();
             }
@@ -39,6 +43,9 @@ public:
 
             writer.String(L"URL");
             writer.String(that.URL.c_str(), that.URL.size());
+
+            writer.String(L"Flags");
+            writer.Int(that.Flags);
 
             writer.String(L"PlaylistID");
             writer.String(that.PlaylistID.c_str(), that.PlaylistID.size());

@@ -6,26 +6,26 @@
 #include <iomanip>
 #include <codecvt>
 
+static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wStrConverter;
+
 std::wstring Tools::ToWString(const std::string &string) {
-    static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    return converter.from_bytes(string);
+    return wStrConverter.from_bytes(string);
 }
 
 std::wstring Tools::ToWString(const char *string) {
-    static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    return converter.from_bytes(string);
+    return wStrConverter.from_bytes(string);
 }
 
 std::wstring Tools::ToWString(const rapidjson::Value &val) {
     if (val.IsString() && val.GetStringLength() > 0) {
-        return Tools::ToWString(val.GetString());
+        const char *ptr = val.GetString();
+        return wStrConverter.from_bytes(ptr, ptr + val.GetStringLength());
     }
     return std::wstring();
 }
 
 std::string Tools::ToString(const std::wstring &string) {
-    static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    return converter.to_bytes(string);
+    return wStrConverter.to_bytes(string);
 }
 
 void Tools::OutputLastError() {

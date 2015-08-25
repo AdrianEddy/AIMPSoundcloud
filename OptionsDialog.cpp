@@ -68,6 +68,8 @@ void WINAPI OptionsDialog::Notification(int ID) {
             SendDlgItemMessage(m_handle, IDC_LIMITSTREAM, BM_SETCHECK, Config::GetInt32(L"LimitUserStream", 1), 0);
             SendDlgItemMessage(m_handle, IDC_LIMITSTREAMVALUESPIN, UDM_SETPOS32, 0, Config::GetInt32(L"LimitUserStreamValue", 5000));
 
+            SendDlgItemMessage(m_handle, IDC_MONITORLIKES, BM_SETCHECK, Config::GetInt32(L"MonitorLikes", 1), 0);
+            SendDlgItemMessage(m_handle, IDC_MONITORSTREAM, BM_SETCHECK, Config::GetInt32(L"MonitorStream", 1), 0);
             SendDlgItemMessage(m_handle, IDC_CHECKONSTARTUP, BM_SETCHECK, Config::GetInt32(L"CheckOnStartup", 1), 0);
             SendDlgItemMessage(m_handle, IDC_CHECKEVERY, BM_SETCHECK, Config::GetInt32(L"CheckEveryEnabled", 1), 0);
             SendDlgItemMessage(m_handle, IDC_CHECKEVERYVALUESPIN, UDM_SETPOS32, 0, Config::GetInt32(L"CheckEveryHours", 1));
@@ -99,6 +101,8 @@ void WINAPI OptionsDialog::Notification(int ID) {
             Config::SetInt32(L"LimitUserStream", SendDlgItemMessage(m_handle, IDC_LIMITSTREAM, BM_GETCHECK, 0, 0) == BST_CHECKED);
             Config::SetInt32(L"CheckEveryEnabled", SendDlgItemMessage(m_handle, IDC_CHECKEVERY, BM_GETCHECK, 0, 0) == BST_CHECKED);
             Config::SetInt32(L"CheckOnStartup", SendDlgItemMessage(m_handle, IDC_CHECKONSTARTUP, BM_GETCHECK, 0, 0) == BST_CHECKED);
+            Config::SetInt32(L"MonitorLikes", SendDlgItemMessage(m_handle, IDC_MONITORLIKES, BM_GETCHECK, 0, 0) == BST_CHECKED);
+            Config::SetInt32(L"MonitorStream", SendDlgItemMessage(m_handle, IDC_MONITORSTREAM, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
             m_plugin->StartMonitorTimer();
         } break;
@@ -508,30 +512,25 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                             dialog->OptionsModified();
                     }
                 break;
+                case IDC_MONITORLIKES:
+                case IDC_MONITORSTREAM:
                 case IDC_ADDDURATION:
                 case IDC_CHECKONSTARTUP:
-                    if (HIWORD(wParam) == BN_CLICKED) {
-                        dialog->OptionsModified();
-                    }
-                break;
+                case IDC_CHECKEVERY:
                 case IDC_LIMITSTREAM:
                     if (HIWORD(wParam) == BN_CLICKED) {
-                        BOOL enable = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0) == BST_CHECKED;
-
-                        EnableWindow(GetDlgItem(hwnd, IDC_LIMITSTREAMVALUE), enable);
-                        EnableWindow(GetDlgItem(hwnd, IDC_LIMITSTREAMVALUESPIN), enable);
-                        EnableWindow(GetDlgItem(hwnd, IDC_TRACKS), enable);
                         dialog->OptionsModified();
-                    }
-                break;
-                case IDC_CHECKEVERY:
-                    if (HIWORD(wParam) == BN_CLICKED) {
-                        BOOL enable = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0) == BST_CHECKED;
 
-                        EnableWindow(GetDlgItem(hwnd, IDC_CHECKEVERYVALUE), enable);
-                        EnableWindow(GetDlgItem(hwnd, IDC_CHECKEVERYVALUESPIN), enable);
-                        EnableWindow(GetDlgItem(hwnd, IDC_HOURS), enable);
-                        dialog->OptionsModified();
+                        BOOL enable = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                        if (LOWORD(wParam) == IDC_LIMITSTREAM) {
+                            EnableWindow(GetDlgItem(hwnd, IDC_LIMITSTREAMVALUE), enable);
+                            EnableWindow(GetDlgItem(hwnd, IDC_LIMITSTREAMVALUESPIN), enable);
+                            EnableWindow(GetDlgItem(hwnd, IDC_TRACKS), enable);
+                        } else if (LOWORD(wParam) == IDC_CHECKEVERY) {
+                            EnableWindow(GetDlgItem(hwnd, IDC_CHECKEVERYVALUE), enable);
+                            EnableWindow(GetDlgItem(hwnd, IDC_CHECKEVERYVALUESPIN), enable);
+                            EnableWindow(GetDlgItem(hwnd, IDC_HOURS), enable);
+                        }
                     }
                 break;
             }

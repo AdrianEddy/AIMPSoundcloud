@@ -2,6 +2,7 @@
 
 #include "Tools.h"
 #include "SDK/apiPlaylists.h"
+#include "SDK/apiPlayer.h"
 #include "AIMPSoundcloud.h"
 #include "SoundCloudAPI.h"
 
@@ -31,6 +32,12 @@ void WINAPI MessageHook::CoreMessage(DWORD AMessage, int AParam1, void *AParam2,
                     parent->Release();
                 }
                 currentTrack->Release();
+
+                IAIMPServicePlayer *player = nullptr;
+                if (SUCCEEDED(m_plugin->m_core->QueryInterface(IID_IAIMPServicePlayer, reinterpret_cast<void **>(&player)))) {
+                    player->GoToNext();
+                    player->Release();
+                }
                 *AResult = S_OK;
                 return;
             }

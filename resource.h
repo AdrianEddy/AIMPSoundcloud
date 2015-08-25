@@ -31,3 +31,5 @@
 #define IDC_LIMITSTREAMVALUE                    40012
 #define IDC_LIMITSTREAMVALUESPIN                40013
 #define IDC_TRACKS                              40014
+#define IDC_MONITORLIKES                        40015
+#define IDC_MONITORSTREAM                       40016

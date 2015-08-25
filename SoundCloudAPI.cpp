@@ -22,7 +22,6 @@ void SoundCloudAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value 
     if (Plugin::instance()->core()->CreateObject(IID_IAIMPFileInfo, reinterpret_cast<void **>(&file_info)) == S_OK) {
         auto processItem = [&](const rapidjson::Value &item) {
             if (!item.HasMember("id")) {
-                DebugA("NOT adding %s\n ", item["title"].GetString());
                 return;
             }
 
@@ -154,18 +153,18 @@ void SoundCloudAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, Loadi
         }
         playlist->EndUpdate();
 
-        if (d.IsObject() && d.HasMember("next_href")) {
-            if (Config::GetInt32(L"LimitUserStream", 0)) {
-                if (state->AddedItems >= Config::GetInt32(L"LimitUserStreamValue", 5000)) {
-                    playlist->Release();
-                    delete state;
-                    return;
-                }
-            }
-            LoadFromUrl(Tools::ToWString(d["next_href"]), playlist, state);
+        bool processNextPage = d.IsObject() && d.HasMember("next_href");
+
+        if ((state->Flags & LoadingState::IgnoreNextPage) ||
+            (Config::GetInt32(L"LimitUserStream", 0) && state->AddedItems >= Config::GetInt32(L"LimitUserStreamValue", 5000))) {
+            processNextPage = false;
+        }
+
+        if (processNextPage) {
+            LoadFromUrl(Tools::ToWString(d["next_href"]), playlist, state, finishCallback);
         } else if (state->Flags & LoadingState::LoadingLikes && d.IsArray() && d.Size() > 0) {
             state->Offset += 200;
-            LoadFromUrl(L"https://api.soundcloud.com/me/favorites?limit=200&offset=" + std::to_wstring(state->Offset), playlist, state);
+            LoadFromUrl(L"https://api.soundcloud.com/me/favorites?limit=200&offset=" + std::to_wstring(state->Offset), playlist, state, finishCallback);
         } else if (!state->PendingUrls.empty()) {
             const LoadingState::PendingUrl &pl = state->PendingUrls.front();
             if (!pl.Title.empty()) {
@@ -176,7 +175,7 @@ void SoundCloudAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, Loadi
                 state->Flags = LoadingState::UpdateAdditionalPos | LoadingState::IgnoreExistingPosition;
             }
 
-            LoadFromUrl(pl.Url, playlist, state);
+            LoadFromUrl(pl.Url, playlist, state, finishCallback);
             state->PendingUrls.pop();
         } else {
             // Finished
@@ -335,7 +334,7 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
             if (monitor) {
                 toMonitor.insert(finalUrl);
                 for (const auto &x : toMonitor) {
-                    Config::MonitorUrls.push_back({ x, playlistId, plName });
+                    Config::MonitorUrls.push_back({ x, playlistId, state->Flags, plName });
                 }
                 Config::SaveExtendedConfig();
             }
@@ -345,6 +344,54 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
         }
     });
 }
+
+
+
+void SoundCloudAPI::LoadMyTracksAndPlaylists() {
+    if (!Plugin::instance()->isConnected())
+        return;
+
+    auto processResponse = [](unsigned char *data, int size) {
+        rapidjson::Document d;
+        d.Parse(reinterpret_cast<const char *>(data));
+        LoadingState *state = new LoadingState();
+
+        if (d.IsArray()) {
+            if (d.Size() > 0 && (*d.Begin()).HasMember("kind") && strcmp((*d.Begin())["kind"].GetString(), "track") == 0) {
+                state->ReferenceName = L"Soundcloud - " + Config::GetString(L"UserName");
+                IAIMPPlaylist *pl = Plugin::instance()->GetPlaylist(state->ReferenceName);
+                if (pl) {
+                    AddFromJson(pl, d, state);
+                }
+            } else {
+                for (auto x = d.Begin(), e = d.End(); x != e; x++) {
+                    const rapidjson::Value &px = *x;
+                    if (!px.IsObject())
+                        continue;
+
+                    if (px.HasMember("kind") && strcmp(px["kind"].GetString(), "playlist") == 0 && px.HasMember("tracks") && px["tracks"].IsArray() && px["tracks"].Size() > 0) {
+                        // Create playlist and add tracks in a loop
+                        state->ReferenceName = Tools::ToWString(px["title"]);
+                        IAIMPPlaylist *pl = Plugin::instance()->GetPlaylist(state->ReferenceName);
+                        if (pl) {
+                            if (px.HasMember("secret_uri")) {
+                                Config::MonitorUrls.push_back({ Tools::ToWString(px["secret_uri"]), Plugin::instance()->PlaylistId(pl), state->Flags, state->ReferenceName });
+                            }
+
+                            AddFromJson(pl, px["tracks"], state);
+                        }
+                    }
+                }
+            }
+        }
+        delete state;
+        Config::SaveExtendedConfig();
+    };
+
+    AimpHTTP::Get(L"https://api.soundcloud.com/me/tracks?oauth_token=" + Plugin::instance()->getAccessToken(), processResponse);
+    AimpHTTP::Get(L"https://api.soundcloud.com/me/playlists?oauth_token=" + Plugin::instance()->getAccessToken(), processResponse);
+}
+
 
 void SoundCloudAPI::LikeSong(int64_t trackId) {
     std::wstring url(L"https://api.soundcloud.com/me/favorites/");
@@ -363,14 +410,15 @@ void SoundCloudAPI::UnlikeSong(int64_t trackId) {
 
     AimpHTTP::Delete(url);
 
-    IAIMPPlaylist *likes = Plugin::instance()->GetPlaylist(L"Soundcloud - Likes");
-    Plugin::instance()->ForEveryItem(likes, [&](IAIMPPlaylistItem *item, IAIMPFileInfo *info, int64_t id) -> int {
-        if (id == trackId) {
-            return Plugin::FLAG_DELETE_ITEM | Plugin::FLAG_STOP_LOOP;
-        }
-        return 0;
-    });
-    likes->Release();
+    if (IAIMPPlaylist *likes = Plugin::instance()->GetPlaylist(L"Soundcloud - Likes", false, false)) {
+        Plugin::instance()->ForEveryItem(likes, [&](IAIMPPlaylistItem *item, IAIMPFileInfo *info, int64_t id) -> int {
+            if (id == trackId) {
+                return Plugin::FLAG_DELETE_ITEM | Plugin::FLAG_STOP_LOOP;
+            }
+            return 0;
+        });
+        likes->Release();
+    }
 }
 
 void SoundCloudAPI::LoadRecommendations(int64_t trackId, bool createPlaylist, IAIMPPlaylistItem *item) {
