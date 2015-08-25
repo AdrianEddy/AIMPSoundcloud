@@ -1,4 +1,4 @@
-LIBRARY "AIMPSoundcloud"
+LIBRARY "aimp_SoundCloud"
 
 EXPORTS
     AIMPPluginGetHeader
