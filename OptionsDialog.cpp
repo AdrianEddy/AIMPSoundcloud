@@ -17,7 +17,7 @@
 
 extern HINSTANCE g_hInst;
 
-OptionsDialog::OptionsDialog(Plugin *plugin) : m_userId(0), m_plugin(plugin), m_handle(NULL) {
+OptionsDialog::OptionsDialog(Plugin *plugin) : m_userId(0), m_plugin(plugin), m_handle(NULL), m_currentFocusControl(0) {
     if (FAILED(m_plugin->core()->QueryInterface(IID_IAIMPServiceOptionsDialog, reinterpret_cast<void **>(&m_dialogService)))) {
         m_dialogService = nullptr;
     }
@@ -191,6 +191,7 @@ void OptionsDialog::UpdateProfileInfo() {
 
 LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
     static OptionsDialog *dialog = nullptr;
+    static HBRUSH bgBrush;
     static HBITMAP hBmp = nullptr;
     static bool previousConnected = false;
     if (!dialog) {
@@ -198,6 +199,7 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
         Gdiplus::Bitmap *btnImage = getConnectBtnImage(dialog->m_plugin->isConnected());
         btnImage->GetHBITMAP(NULL, &hBmp);
         previousConnected = dialog->m_plugin->isConnected();
+        bgBrush = CreateSolidBrush(RGB(240, 240, 240));
     } else if (previousConnected != dialog->m_plugin->isConnected()) {
         if (hBmp)
             DeleteObject(hBmp);
@@ -214,6 +216,8 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
 
+            FillRect(hdc, &rect, bgBrush);
+
             HDC hdcMem = CreateCompatibleDC(hdc);
             SelectObject(hdcMem, hBmp);
 
@@ -222,10 +226,9 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
             BLENDFUNCTION bf;
             bf.BlendOp = AC_SRC_OVER;
             bf.BlendFlags = 0;
-            bf.SourceConstantAlpha = 0xff;
+            bf.SourceConstantAlpha = (GetFocus() == hWnd) ? 145 : 255;
             bf.AlphaFormat = AC_SRC_ALPHA;
             AlphaBlend(hdc, 0, 0, rect.right, rect.bottom, hdcMem, 0, 0, bitmap.bmWidth, bitmap.bmHeight, bf);
-
             DeleteDC(hdcMem);
 
             EndPaint(hWnd, &ps);
@@ -235,6 +238,7 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
             SetCursor(LoadCursor(NULL, IDC_HAND));
             return TRUE;
         case WM_DESTROY:
+            DeleteObject(bgBrush);
             DeleteObject(hBmp);
             dialog = nullptr;
         break;
@@ -600,15 +604,36 @@ void OptionsDialog::Connect(std::function<void()> onFinished) {
                   NULL, NULL, SW_SHOWNORMAL);
 }
 
+static std::vector<int> s_tabOrder({ IDC_CONNECTBTN,
+                                     IDC_ADDDURATION,
+                                     IDC_LIMITSTREAM,
+                                     IDC_LIMITSTREAMVALUE,
+                                     IDC_MONITORLIKES,
+                                     IDC_MONITORSTREAM,
+                                     IDC_CHECKONSTARTUP,
+                                     IDC_CHECKEVERY,
+                                     IDC_CHECKEVERYVALUE
+});
+
 BOOL WINAPI OptionsDialog::SelectFirstControl() {
-    // TODO
-    //PostMessage(m_handle, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(m_handle, IDC_CONNECTBTN), TRUE);
-    return false;
+    m_currentFocusControl = 0;
+    SetFocus(GetDlgItem(m_handle, s_tabOrder[m_currentFocusControl]));
+    return true;
 }
 
 BOOL WINAPI OptionsDialog::SelectNextControl(BOOL FindForward, BOOL CheckTabStop) {
-    // TODO
-    //PostMessage(m_handle, WM_NEXTDLGCTL, 0, FALSE); // Next control
-    return false;
+    if (FindForward) {
+        if (m_currentFocusControl + 1 > s_tabOrder.size() - 1)
+            return false;
+
+        ++m_currentFocusControl;
+    } else {
+        if (m_currentFocusControl <= 0)
+            return false;
+
+        --m_currentFocusControl;
+    }
+
+    SetFocus(GetDlgItem(m_handle, s_tabOrder[m_currentFocusControl]));
+    return true;
 }
-                                            

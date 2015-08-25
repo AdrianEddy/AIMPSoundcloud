@@ -60,6 +60,7 @@ private:
     std::wstring m_userInfo;
 
     HWND m_handle;
+    unsigned int m_currentFocusControl;
     Plugin *m_plugin;
 
     IAIMPServiceOptionsDialog *m_dialogService;
