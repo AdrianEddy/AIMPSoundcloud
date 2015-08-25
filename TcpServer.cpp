@@ -16,11 +16,15 @@ void TcpServer::ThreadFunc(void *arg) {
     WSADATA wsa;
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
         OutputDebugString(L"WSAStartup failed\n");
+        if (parent->m_deleteOnFinish)
+            delete parent;
         return;
     }
     SOCKET s;
     if ((s = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
         OutputDebugString(L"Could not create socket\n");
+        if (parent->m_deleteOnFinish)
+            delete parent;
         return;
     }
 
@@ -30,7 +34,9 @@ void TcpServer::ThreadFunc(void *arg) {
     server.sin_port = htons(parent->m_port);
 
     if (bind(s, (struct sockaddr *)&server, sizeof(server)) == SOCKET_ERROR) {
-        OutputDebugString(L"Bind failed");
+        OutputDebugString(L"bind failed\n");
+        if (parent->m_deleteOnFinish)
+            delete parent;
         return;
     }
 
@@ -41,6 +47,8 @@ void TcpServer::ThreadFunc(void *arg) {
         SOCKET new_socket = accept(s, (struct sockaddr *)&client, &c);
         if (new_socket == INVALID_SOCKET) {
             OutputDebugString(L"accept failed\n");
+            if (parent->m_deleteOnFinish)
+                delete parent;
             return;
         }
         char request[2048];
