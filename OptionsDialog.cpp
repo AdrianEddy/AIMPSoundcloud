@@ -158,7 +158,12 @@ void OptionsDialog::LoadProfileInfo() {
             OptionsModified();
 
             if (d.HasMember("avatar_url")) { // Get the avatar
-                AimpHTTP::Download(Tools::ToWString(d["avatar_url"]), Config::PluginConfigFolder() + L"user_avatar.jpg", [this](unsigned char *data, int size) {
+                // No idea why, but on old Windows XP AIMP had trouble getting https avatar. Replace with http
+                std::wstring url(Tools::ToWString(d["avatar_url"]));
+                if (url.find(L"https") == 0) 
+                    url.replace(0, 5, L"http");
+
+                AimpHTTP::Download(url, Config::PluginConfigFolder() + L"user_avatar.jpg", [this](unsigned char *data, int size) {
                     UpdateProfileInfo();
                     OptionsModified();
                 });
@@ -283,18 +288,19 @@ LRESULT CALLBACK OptionsDialog::FrameProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
         penInner = CreatePen(PS_SOLID, 1, RGB(255, 255, 255));
         captionFont = CreateFont(13, 0, 0, 0, FW_BLACK, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN, L"Tahoma");
 
-        GetClientRect(hWnd, &rect);
-        rect.right += 7;
-        rect.bottom += 11;
-
-        captionRect = rect;
-        captionRect.bottom = 21;
-
-        gradient[0] = { captionRect.left  + 1, captionRect.top + 1, 0xff00, 0x8800, 0x0000, 0xffff }; // #ff8800
-        gradient[1] = { captionRect.right - 1, captionRect.bottom,  0xff00, 0x3300, 0x0000, 0xffff }; // #ff3300
     }
 
     switch (uMsg) {
+
+        case WM_SIZE:
+            GetClientRect(hWnd, &rect);
+
+            captionRect = rect;
+            captionRect.bottom = 21;
+
+            gradient[0] = { captionRect.left + 1, captionRect.top + 1, 0xff00, 0x8800, 0x0000, 0xffff }; // #ff8800
+            gradient[1] = { captionRect.right - 1, captionRect.bottom, 0xff00, 0x3300, 0x0000, 0xffff }; // #ff3300
+            return TRUE;
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
@@ -465,6 +471,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
     static OptionsDialog *dialog = nullptr;
     static Plugin *plugin = nullptr;
     static HFONT userNameFont;
+    static HBRUSH bgBrush;
 
     switch (Msg) {
         case WM_INITDIALOG: {
@@ -484,16 +491,29 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
 
             userNameFont = CreateFont(23, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN, L"Tahoma");
             SendDlgItemMessage(hwnd, IDC_USERNAME, WM_SETFONT, WPARAM(userNameFont), TRUE);
+            bgBrush = CreateSolidBrush(RGB(240, 240, 240));
+        } break;
+        case WM_SIZE: {
+            RECT rc, rc2;
+            GetClientRect(hwnd, &rc);
+
+            SetWindowPos(GetDlgItem(hwnd, IDC_MAINFRAME), NULL, rc.left, rc.top, rc.right, rc.bottom, SWP_NOZORDER);
+
+            HWND group = GetDlgItem(hwnd, IDC_AUTHGROUPBOX);    GetClientRect(group, &rc2); SetWindowPos(group, NULL, 0, 0, rc.right - 21, rc2.bottom, SWP_NOMOVE | SWP_NOZORDER);
+                 group = GetDlgItem(hwnd, IDC_GENERALGROUPBOX); GetClientRect(group, &rc2); SetWindowPos(group, NULL, 0, 0, rc.right - 21, rc2.bottom, SWP_NOMOVE | SWP_NOZORDER);
+                 group = GetDlgItem(hwnd, IDC_MONITORGROUPBOX); GetClientRect(group, &rc2); SetWindowPos(group, NULL, 0, 0, rc.right - 21, rc2.bottom, SWP_NOMOVE | SWP_NOZORDER);
+            return TRUE;
         } break;
         case WM_CTLCOLORSTATIC: {
             DWORD CtrlID = GetDlgCtrlID((HWND)lParam);
+            HDC hdcStatic = (HDC)wParam;
             if (CtrlID == IDC_USERINFO)  {
-                HDC hdcStatic = (HDC)wParam;
                 SetTextColor(hdcStatic, RGB(0x80, 0x80, 0x80));
-                SetBkMode(hdcStatic, TRANSPARENT);
-                return (INT_PTR)GetStockObject(NULL_BRUSH);
+            } else {
+                SetTextColor(hdcStatic, RGB(0, 0, 0));
             }
-            return FALSE;
+            SetBkMode(hdcStatic, TRANSPARENT);
+            return (INT_PTR)bgBrush;
         } break;
         case WM_NOTIFY:
             switch (((LPNMHDR)lParam)->code) {
@@ -553,6 +573,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             }
         } break;
         case WM_DESTROY:
+            DeleteObject(bgBrush);
             DeleteObject(userNameFont);
         break;
         default: return FALSE;
