@@ -92,6 +92,7 @@
     <ClInclude Include="IUnknownInterfaceImpl.h" />
     <ClInclude Include="MessageHook.h" />
     <ClInclude Include="OptionsDialog.h" />
+    <ClInclude Include="PlaylistListener.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SoundCloudAPI.h" />
     <ClInclude Include="TcpServer.h" />
@@ -115,6 +116,7 @@
     </ClCompile>
     <ClCompile Include="MessageHook.cpp" />
     <ClCompile Include="OptionsDialog.cpp" />
+    <ClCompile Include="PlaylistListener.cpp" />
     <ClCompile Include="SoundCloudAPI.cpp" />
     <ClCompile Include="TcpServer.cpp" />
     <ClCompile Include="Timer.cpp" />

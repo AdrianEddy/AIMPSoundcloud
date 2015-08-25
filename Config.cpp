@@ -14,7 +14,7 @@ std::wstring Config::m_configFolder;
 
 std::unordered_set<int64_t> Config::TrackExclusions;
 std::unordered_set<int64_t> Config::Likes;
-std::set<Config::MonitorUrl> Config::MonitorUrls;
+std::vector<Config::MonitorUrl> Config::MonitorUrls;
 
 bool Config::Init(IAIMPCore *core) {
     IAIMPString *str = nullptr;
@@ -147,7 +147,7 @@ void Config::LoadExtendedConfig() {
                 if (v.IsArray()) {
                     for (auto x = v.Begin(), e = v.End(); x != e; x++) {
                         if ((*x).IsObject()) {
-                            MonitorUrls.insert(*x);
+                            MonitorUrls.push_back(*x);
                         }
                     }
                 }

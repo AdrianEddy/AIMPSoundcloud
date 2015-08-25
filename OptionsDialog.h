@@ -8,8 +8,10 @@
 
 class Plugin;
 
-class OptionsDialog : public IUnknownInterfaceImpl<IAIMPOptionsDialogFrame> {
+class OptionsDialog : public IUnknownInterfaceImpl<IAIMPOptionsDialogFrame>, public IAIMPOptionsDialogFrameKeyboardHelper {
 public:
+    typedef IUnknownInterfaceImpl<IAIMPOptionsDialogFrame> Base;
+
     OptionsDialog(Plugin *plugin);
     ~OptionsDialog();
 
@@ -21,14 +23,16 @@ public:
             AddRef();
             return S_OK;
         }
-        /*if (riid == IID_IAIMPOptionsDialogFrameKeyboardHelper) {
-            *ppvObj = this;
+        if (riid == IID_IAIMPOptionsDialogFrameKeyboardHelper) {
+            *ppvObj = static_cast<IAIMPOptionsDialogFrameKeyboardHelper *>(this);;
             AddRef();
             return S_OK;
-        }*/
+        }
 
         return E_NOINTERFACE;
     }
+    virtual ULONG WINAPI AddRef(void) { return Base::AddRef(); }
+    virtual ULONG WINAPI Release(void) { return Base::Release(); }
 
     HRESULT WINAPI GetName(IAIMPString **S);
 
@@ -42,11 +46,12 @@ public:
 
     void OptionsModified();
 
-public:
     virtual BOOL WINAPI DialogChar(WCHAR CharCode, int Unused) { return false; }
     virtual BOOL WINAPI DialogKey(WORD CharCode, int Unused) { return false; }
     virtual BOOL WINAPI SelectFirstControl();
     virtual BOOL WINAPI SelectNextControl(BOOL FindForward, BOOL CheckTabStop);
+
+    static void Connect(std::function<void()>);
 
 private:
     int64_t m_userId;

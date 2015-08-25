@@ -4,15 +4,9 @@
 #include "SDK/apiPlaylists.h"
 #include "SDK/apiMessages.h"
 #include "OptionsDialog.h"
-#include "AimpHTTP.h"
 #include "Config.h"
-#include "SoundCloudAPI.h"
-#include "AimpMenu.h"
-#include "resource.h"
-#include "Tools.h"
-#include "AddURLDialog.h"
 #include "MessageHook.h"
-#include <vector>
+#include <queue>
 
 #include <gdiplus.h>
 #pragma comment(lib, "gdiplus.lib")
@@ -21,14 +15,13 @@ extern HINSTANCE g_hInst;
 
 class IAIMPFileInfo;
 
-static const wchar_t Name[] = L"Soundcloud player";
+static const wchar_t Name[] = L"SoundCloud Support";
 static const wchar_t Author[] = L"Eddy";
-static const wchar_t ShortDesc[] = L"Provides ability to play Soundcloud tracks within AIMP";
+static const wchar_t ShortDesc[] = L"Provides ability to play SoundCloud tracks within AIMP";
 
 class Plugin : public IUnknownInterfaceImpl<IAIMPPlugin> {
     friend class OptionsDialog;
     friend class MessageHook;
-
 public:
     static Plugin *instance() {
         if (!m_instance) 
@@ -58,6 +51,7 @@ public:
     }
 
     IAIMPPlaylist *GetPlaylist(const std::wstring &playlistName, bool activate = true);
+    IAIMPPlaylist *GetPlaylistById(const std::wstring &playlistId, bool activate = false);
     IAIMPPlaylist *GetCurrentPlaylist();
     IAIMPPlaylist *UpdatePlaylistGrouping(IAIMPPlaylist *pl);
     IAIMPPlaylistItem *GetCurrentTrack();
@@ -79,8 +73,12 @@ public:
 
     inline IAIMPCore *core() const { return m_core; }
 
+    static void MonitorCallback();
+    void StartMonitorTimer();
+    void KillMonitorTimer();
+
 private:
-    Plugin() : m_playlistManager(nullptr), m_messageDispatcher(nullptr), m_gdiplusToken(0), m_core(nullptr) {
+    Plugin() : m_playlistManager(nullptr), m_messageDispatcher(nullptr), m_monitorTimer(0), m_gdiplusToken(0), m_core(nullptr) {
         AddRef();
     }
     Plugin(const Plugin &);
@@ -91,6 +89,9 @@ private:
     MessageHook *m_messageHook;
     IAIMPServicePlaylistManager *m_playlistManager;
     IAIMPServiceMessageDispatcher *m_messageDispatcher;
+
+    UINT_PTR m_monitorTimer;
+    std::queue<Config::MonitorUrl> m_monitorPendingUrls;
 
     ULONG_PTR m_gdiplusToken;
     std::wstring m_accessToken;

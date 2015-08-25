@@ -99,6 +99,8 @@ void WINAPI OptionsDialog::Notification(int ID) {
             Config::SetInt32(L"LimitUserStream", SendDlgItemMessage(m_handle, IDC_LIMITSTREAM, BM_GETCHECK, 0, 0) == BST_CHECKED);
             Config::SetInt32(L"CheckEveryEnabled", SendDlgItemMessage(m_handle, IDC_CHECKEVERY, BM_GETCHECK, 0, 0) == BST_CHECKED);
             Config::SetInt32(L"CheckOnStartup", SendDlgItemMessage(m_handle, IDC_CHECKONSTARTUP, BM_GETCHECK, 0, 0) == BST_CHECKED);
+
+            m_plugin->StartMonitorTimer();
         } break;
     }
 }
@@ -483,56 +485,10 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             switch (LOWORD(wParam)) {
                 case IDC_CONNECTBTN: 
                     if (!plugin->isConnected()) {
-                        (new TcpServer(38916, [] (TcpServer *s, char *request, std::string &response) -> bool {
-                            response = "HTTP/1.1 200 OK\r\n"
-                                       "Content-Type: text/html\r\n"
-                                       "Connection: close\r\n"
-                                       "Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0\r\n"
-                                       "Pragma: no-cache\r\n"
-                                       "Server: AIMPSoundcloud plugin\r\n"
-                                       "\r\n";
-
-                            if (HRSRC hResource = ::FindResource(g_hInst, MAKEINTRESOURCE(IDR_CONNECTRES1), L"CONNECTRESP")) {
-                                if (DWORD dataSize = ::SizeofResource(g_hInst, hResource)) {
-                                    if (void *pResourceData = ::LockResource(::LoadResource(g_hInst, hResource))) {
-                                        response += std::string(reinterpret_cast<char *>(pResourceData), dataSize);
-                                    }
-                                }
-                            }
-
-                            char *token = strstr(request, "code=");
-                            if (token) {
-                                token += 5;
-                                if (char *amp = strstr(token, "&")) *amp = 0;
-                                if (char *space = strstr(token, " ")) *space = 0;
-
-                                DebugA("Access code: %s\n", token);
-
-                                std::string postData = "client_id=" CLIENT_ID "&client_secret=" CLIENT_SECRET "&grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A38916%2F&code=";
-                                postData += token;
-
-                                AimpHTTP::Post(L"https://api.soundcloud.com/oauth2/token", postData, [](unsigned char *data, int size) {
-                                    rapidjson::Document d;
-                                    d.Parse(reinterpret_cast<const char *>(data));
-
-                                    if (d.HasMember("access_token")) {
-                                        plugin->setAccessToken(Tools::ToWString(d["access_token"].GetString()));
-                                        dialog->OptionsModified();
-                                        dialog->LoadProfileInfo();
-                                    }
-                                });
-
-                                Tools::ReplaceString("%TITLE%", "Authorization granted", response);
-                                Tools::ReplaceString("%TEXT%", "You may now close this browser window and return to AIMP.", response);
-                                return true;
-                            }
-
-                            Tools::ReplaceString("%TITLE%", "Sorry, an error occurred", response);
-                            Tools::ReplaceString("%TEXT%", "Couldn't connect to SoundCloud account. Please return to AIMP and try again.", response);
-                            return true;
-                        }))->Start();
-
-                        ShellExecuteA(dialog->m_handle, "open", "https://soundcloud.com/connect?client_id=" CLIENT_ID "&redirect_uri=http%3A%2F%2Flocalhost%3A38916%2F&response_type=code&scope=non-expiring", NULL, NULL, SW_SHOWNORMAL);
+                        Connect([] {
+                            dialog->OptionsModified();
+                            dialog->LoadProfileInfo();
+                        });
                     } else {
                         plugin->setAccessToken(L"");
                         dialog->m_userName.clear();
@@ -543,6 +499,13 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
 
                         dialog->OptionsModified();
                         dialog->UpdateProfileInfo();
+                    }
+                break;
+                case IDC_CHECKEVERYVALUE:
+                case IDC_LIMITSTREAMVALUE:
+                    if (HIWORD(wParam) == EN_CHANGE) {
+                        if (dialog)
+                            dialog->OptionsModified();
                     }
                 break;
                 case IDC_ADDDURATION:
@@ -581,14 +544,72 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
     return TRUE;
 }
 
+void OptionsDialog::Connect(std::function<void()> onFinished) {
+    (new TcpServer(38916, [onFinished](TcpServer *s, char *request, std::string &response) -> bool {
+        response = "HTTP/1.1 200 OK\r\n"
+                   "Content-Type: text/html\r\n"
+                   "Connection: close\r\n"
+                   "Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0\r\n"
+                   "Pragma: no-cache\r\n"
+                   "Server: AIMPSoundcloud plugin\r\n"
+                   "\r\n";
+
+        if (HRSRC hResource = ::FindResource(g_hInst, MAKEINTRESOURCE(IDR_CONNECTRES1), L"CONNECTRESP")) {
+            if (DWORD dataSize = ::SizeofResource(g_hInst, hResource)) {
+                if (void *pResourceData = ::LockResource(::LoadResource(g_hInst, hResource))) {
+                    response += std::string(reinterpret_cast<char *>(pResourceData), dataSize);
+                }
+            }
+        }
+
+        char *token = strstr(request, "code=");
+        if (token) {
+            token += 5;
+            if (char *amp = strstr(token, "&")) *amp = 0;
+            if (char *space = strstr(token, " ")) *space = 0;
+
+            DebugA("Access code: %s\n", token);
+
+            std::string postData = "client_id=" CLIENT_ID "&client_secret=" CLIENT_SECRET "&grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A38916%2F&code=";
+            postData += token;
+
+            AimpHTTP::Post(L"https://api.soundcloud.com/oauth2/token", postData, [onFinished](unsigned char *data, int size) {
+                rapidjson::Document d;
+                d.Parse(reinterpret_cast<const char *>(data));
+
+                if (d.HasMember("access_token")) {
+                    Plugin::instance()->setAccessToken(Tools::ToWString(d["access_token"].GetString()));
+                    Config::SetString(L"AccessToken", Plugin::instance()->getAccessToken());
+                    if (onFinished)
+                        onFinished();
+                }
+            });
+
+            Tools::ReplaceString("%TITLE%", "Authorization granted", response);
+            Tools::ReplaceString("%TEXT%", "You may now close this browser window and return to AIMP.", response);
+            return true;
+        }
+
+        Tools::ReplaceString("%TITLE%", "Sorry, an error occurred", response);
+        Tools::ReplaceString("%TEXT%", "Couldn't connect to SoundCloud account. Please return to AIMP and try again.", response);
+        return true;
+    }))->Start();
+
+    ShellExecuteA(Plugin::instance()->GetMainWindowHandle(),
+                  "open",
+                  "https://soundcloud.com/connect?client_id=" CLIENT_ID "&redirect_uri=http%3A%2F%2Flocalhost%3A38916%2F&response_type=code&scope=non-expiring",
+                  NULL, NULL, SW_SHOWNORMAL);
+}
+
 BOOL WINAPI OptionsDialog::SelectFirstControl() {
     // TODO
-    PostMessage(m_handle, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(m_handle, IDC_CONNECTBTN), TRUE);
-    return true;
+    //PostMessage(m_handle, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(m_handle, IDC_CONNECTBTN), TRUE);
+    return false;
 }
 
 BOOL WINAPI OptionsDialog::SelectNextControl(BOOL FindForward, BOOL CheckTabStop) {
     // TODO
-    PostMessage(m_handle, WM_NEXTDLGCTL, 0, FALSE); // Next control
-    return true;
+    //PostMessage(m_handle, WM_NEXTDLGCTL, 0, FALSE); // Next control
+    return false;
 }
+                                            

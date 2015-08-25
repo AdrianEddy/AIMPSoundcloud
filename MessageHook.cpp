@@ -3,6 +3,7 @@
 #include "Tools.h"
 #include "SDK/apiPlaylists.h"
 #include "AIMPSoundcloud.h"
+#include "SoundCloudAPI.h"
 
 MessageHook::MessageHook(Plugin *pl) : m_plugin(pl) {
     

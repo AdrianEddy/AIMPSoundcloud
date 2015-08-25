@@ -2,7 +2,7 @@
 
 #include <string>
 #include <unordered_set>
-#include <set>
+#include <vector>
 #include "SDK/apiCore.h"
 #include <cstdint>
 #include "rapidjson/document.h"
@@ -17,34 +17,31 @@ class Config {
 public:
     struct MonitorUrl {
         std::wstring URL;
-        std::wstring PlaylistName;
+        std::wstring PlaylistID;
         std::wstring GroupName;
 
         typedef rapidjson::PrettyWriter<rapidjson::FileWriteStream, rapidjson::UTF16<>> Writer;
         typedef rapidjson::GenericValue<rapidjson::UTF16<>> Value;
 
-        MonitorUrl(const std::wstring &url, const std::wstring &playlistName, const std::wstring &groupName = std::wstring())
-            : URL(url), PlaylistName(playlistName), GroupName(groupName) {
+        MonitorUrl(const std::wstring &url, const std::wstring &playlistID, const std::wstring &groupName = std::wstring())
+            : URL(url), PlaylistID(playlistID), GroupName(groupName) {
         }
         MonitorUrl(const Value &v) {
             if (v.IsObject()) {
                 URL = v[L"URL"].GetString();
-                PlaylistName = v[L"PlaylistName"].GetString();
+                PlaylistID = v[L"PlaylistID"].GetString();
                 GroupName = v[L"GroupName"].GetString();
             }
         }
 
-        friend bool operator <(const MonitorUrl &a, const MonitorUrl &b) {
-            return a.URL < b.URL && a.PlaylistName < b.PlaylistName && a.GroupName < b.GroupName;
-        }
         friend Writer &operator <<(Writer &writer, const MonitorUrl &that) {
             writer.StartObject();
 
             writer.String(L"URL");
             writer.String(that.URL.c_str(), that.URL.size());
 
-            writer.String(L"PlaylistName");
-            writer.String(that.PlaylistName.c_str(), that.PlaylistName.size());
+            writer.String(L"PlaylistID");
+            writer.String(that.PlaylistID.c_str(), that.PlaylistID.size());
 
             writer.String(L"GroupName");
             writer.String(that.GroupName.c_str(), that.GroupName.size());
@@ -74,7 +71,7 @@ public:
 
     static std::unordered_set<int64_t> Likes;
     static std::unordered_set<int64_t> TrackExclusions;
-    static std::set<MonitorUrl> MonitorUrls;
+    static std::vector<MonitorUrl> MonitorUrls;
 
 private:
     Config();

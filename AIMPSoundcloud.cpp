@@ -3,6 +3,14 @@
 #include "AIMPString.h"
 #include "SDK/apiPlayer.h"
 #include "Timer.h"
+#include "PlaylistListener.h"
+#include "AddURLDialog.h"
+#include "Tools.h"
+#include "AimpHTTP.h"
+#include "SoundCloudAPI.h"
+#include "AimpMenu.h"
+#include "resource.h"
+#include <set>
 
 HRESULT __declspec(dllexport) WINAPI AIMPPluginGetHeader(IAIMPPlugin **Header) {
     *Header = Plugin::instance();
@@ -34,14 +42,14 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
     if (AimpMenu *playlistMenu = AimpMenu::Get(AIMP_MENUID_PLAYER_PLAYLIST_MANAGE)) {
         playlistMenu->Add(L"SoundCloud stream", [this](IAIMPMenuItem *) {
             if (!isConnected()) {
-                // TODO: connect
+                OptionsDialog::Connect(SoundCloudAPI::LoadStream);
                 return;
             }
             SoundCloudAPI::LoadStream();
         }, IDB_ICON)->Release();
         playlistMenu->Add(L"SoundCloud likes", [this](IAIMPMenuItem *) {
             if (!isConnected()) {
-                // TODO: connect
+                OptionsDialog::Connect(SoundCloudAPI::LoadLikes);
                 return;
             }
             SoundCloudAPI::LoadLikes();
@@ -168,13 +176,67 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
         return E_FAIL;
     }
 
-    if (FAILED(Core->RegisterExtension(IID_IAIMPServiceOptionsDialog, new OptionsDialog(this))))
+    if (FAILED(m_core->RegisterExtension(IID_IAIMPServiceOptionsDialog, static_cast<OptionsDialog::Base *>(new OptionsDialog(this)))))
         return E_FAIL;
+    
+    if (FAILED(m_core->RegisterExtension(IID_IAIMPServicePlaylistManager, new PlaylistListener())))
+        return E_FAIL;
+     
+    if (Config::GetInt32(L"CheckOnStartup", 1)) {
+        Timer::SingleShot(2000, MonitorCallback);
+    }
+
+    StartMonitorTimer();
 
     return S_OK;
 }
 
+void Plugin::StartMonitorTimer() {
+    bool enabled = Config::GetInt32(L"CheckEveryEnabled", 1) == 1;
+    if (m_monitorTimer > 0 && enabled)
+        return;
+
+    KillMonitorTimer();
+    if (enabled) {
+        m_monitorPendingUrls.swap(decltype(m_monitorPendingUrls)());
+
+        for (const auto &x : Config::MonitorUrls) {
+            m_monitorPendingUrls.push(x);
+        }
+        // TODO: add likes and stream
+
+        m_monitorTimer = Timer::Schedule(Config::GetInt32(L"CheckEveryHours", 1) * 60 * 60 * 1000, MonitorCallback);
+    }
+}
+
+void Plugin::KillMonitorTimer() {
+    if (m_monitorTimer > 0) {
+        Timer::Cancel(m_monitorTimer);
+        m_monitorTimer = 0;
+    }
+}
+
+void Plugin::MonitorCallback() {
+    if (!m_instance->m_monitorPendingUrls.empty()) {
+        const Config::MonitorUrl &url = m_instance->m_monitorPendingUrls.front();
+        IAIMPPlaylist *pl = m_instance->GetPlaylistById(url.PlaylistID, false);
+        if (!pl) {
+            m_instance->m_monitorPendingUrls.pop();
+            MonitorCallback();
+            return;
+        }
+
+        SoundCloudAPI::LoadingState *state = new SoundCloudAPI::LoadingState();
+        state->ReferenceName = url.GroupName;
+
+        SoundCloudAPI::GetExistingTrackIds(pl, state);
+        SoundCloudAPI::LoadFromUrl(url.URL, pl, state, MonitorCallback);
+        m_instance->m_monitorPendingUrls.pop();
+    }
+}
+
 HRESULT WINAPI Plugin::Finalize() {
+    Timer::Cancel(m_monitorTimer);
     m_messageDispatcher->Unhook(m_messageHook);
     m_messageDispatcher->Release();
     m_playlistManager->Release();
@@ -186,6 +248,19 @@ HRESULT WINAPI Plugin::Finalize() {
     Gdiplus::GdiplusShutdown(m_gdiplusToken);
     return S_OK;
 }
+
+IAIMPPlaylist *Plugin::GetPlaylistById(const std::wstring &playlistId, bool activate) {
+    IAIMPPlaylist *playlistPointer = nullptr;
+    if (SUCCEEDED(m_playlistManager->GetLoadedPlaylistByID(new AIMPString(playlistId), &playlistPointer)) && playlistPointer) {
+        if (activate)
+            m_playlistManager->SetActivePlaylist(playlistPointer);
+
+        return UpdatePlaylistGrouping(playlistPointer);
+    }
+
+    return nullptr;
+}
+
 
 IAIMPPlaylist *Plugin::GetPlaylist(const std::wstring &playlistName, bool activate) {
     IAIMPPlaylist *playlistPointer = nullptr;
