@@ -194,11 +194,11 @@ void SoundCloudAPI::LoadLikes() {
     if (!Plugin::instance()->isConnected())
         return;
 
-    IAIMPPlaylist *pl = Plugin::instance()->GetPlaylist(L"Soundcloud - Likes");
+    IAIMPPlaylist *pl = Plugin::instance()->GetPlaylist(Plugin::instance()->Lang(L"SoundCloud\\Likes", 0));
 
     LoadingState *state = new LoadingState();
     state->Flags = LoadingState::LoadingLikes;
-    state->ReferenceName = Config::GetString(L"UserName") + L"'s likes";
+    state->ReferenceName = Config::GetString(L"UserName") + Plugin::instance()->Lang(L"SoundCloud\\Likes", 1);
     GetExistingTrackIds(pl, state);
 
     LoadFromUrl(L"https://api.soundcloud.com/me/favorites?limit=200", pl, state);
@@ -208,10 +208,10 @@ void SoundCloudAPI::LoadStream() {
     if (!Plugin::instance()->isConnected())
         return;
 
-    IAIMPPlaylist *pl = Plugin::instance()->GetPlaylist(L"Soundcloud - Stream");
+    IAIMPPlaylist *pl = Plugin::instance()->GetPlaylist(Plugin::instance()->Lang(L"SoundCloud\\Stream", 0));
 
     LoadingState *state = new LoadingState();
-    state->ReferenceName = Config::GetString(L"UserName") + L"'s stream";
+    state->ReferenceName = Config::GetString(L"UserName") + Plugin::instance()->Lang(L"SoundCloud\\Stream", 1);
     state->Flags = LoadingState::IgnoreExistingPosition;
     GetExistingTrackIds(pl, state);
 
@@ -254,7 +254,7 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
                 addDirectly = &d;
             } else {
                 if (strcmp(d["kind"].GetString(), "user") == 0) {
-                    plName = L"Soundcloud - " + Tools::ToWString(d["username"]);
+                    plName = Plugin::instance()->Lang(L"SoundCloud\\Prefix") + Tools::ToWString(d["username"]);
 
                     std::wstring base = L"https://api.soundcloud.com/users/" + std::to_wstring(d["id"].GetInt64());
                     finalUrl = base + L"/playlists";
@@ -266,7 +266,7 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
                     state->Flags = LoadingState::IgnoreExistingPosition;
                 } else if (strcmp(d["kind"].GetString(), "track") == 0) {
                     if (url.find(L"/recommended") != std::wstring::npos) {
-                        plName = L"Recommended for " + Tools::ToWString(d["title"]);
+                        plName = Plugin::instance()->Lang(L"SoundCloud\\Recommended") + Tools::ToWString(d["title"]);
                         finalUrl = L"https://api.soundcloud.com/tracks/" + std::to_wstring(d["id"].GetInt64()) + L"/related";
                     } else {
                         plName = Tools::ToWString(d["title"]);
@@ -280,7 +280,7 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
 
                     finalUrl = L"https://api.soundcloud.com/playlists/" + std::to_wstring(d["id"].GetInt64());
                 } else {
-                    MessageBox(Plugin::instance()->GetMainWindowHandle(), L"Could not resolve this url.", L"Error", MB_OK | MB_ICONERROR);
+                    MessageBox(Plugin::instance()->GetMainWindowHandle(), Plugin::instance()->Lang(L"SoundCloud.Messages\\CantResolve").c_str(), Plugin::instance()->Lang(L"SoundCloud.Messages\\Error").c_str(), MB_OK | MB_ICONERROR);
                     delete state;
                     return;
                 }
@@ -339,13 +339,11 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
                 Config::SaveExtendedConfig();
             }
         } else {
-            MessageBox(Plugin::instance()->GetMainWindowHandle(), L"Could not resolve this url.", L"Error", MB_OK | MB_ICONERROR);
+            MessageBox(Plugin::instance()->GetMainWindowHandle(), Plugin::instance()->Lang(L"SoundCloud.Messages\\CantResolve").c_str(), Plugin::instance()->Lang(L"SoundCloud.Messages\\Error").c_str(), MB_OK | MB_ICONERROR);
             return;
         }
     });
 }
-
-
 
 void SoundCloudAPI::LoadMyTracksAndPlaylists() {
     if (!Plugin::instance()->isConnected())
@@ -358,7 +356,7 @@ void SoundCloudAPI::LoadMyTracksAndPlaylists() {
 
         if (d.IsArray()) {
             if (d.Size() > 0 && (*d.Begin()).HasMember("kind") && strcmp((*d.Begin())["kind"].GetString(), "track") == 0) {
-                state->ReferenceName = L"Soundcloud - " + Config::GetString(L"UserName");
+                state->ReferenceName = Plugin::instance()->Lang(L"SoundCloud\\Prefix") + Config::GetString(L"UserName");
                 IAIMPPlaylist *pl = Plugin::instance()->GetPlaylist(state->ReferenceName);
                 if (pl) {
                     AddFromJson(pl, d, state);
@@ -410,7 +408,7 @@ void SoundCloudAPI::UnlikeSong(int64_t trackId) {
 
     AimpHTTP::Delete(url);
 
-    if (IAIMPPlaylist *likes = Plugin::instance()->GetPlaylist(L"Soundcloud - Likes", false, false)) {
+    if (IAIMPPlaylist *likes = Plugin::instance()->GetPlaylist(Plugin::instance()->Lang(L"SoundCloud\\Likes", 0), false, false)) {
         Plugin::instance()->ForEveryItem(likes, [&](IAIMPPlaylistItem *item, IAIMPFileInfo *info, int64_t id) -> int {
             if (id == trackId) {
                 return Plugin::FLAG_DELETE_ITEM | Plugin::FLAG_STOP_LOOP;
@@ -423,7 +421,7 @@ void SoundCloudAPI::UnlikeSong(int64_t trackId) {
 
 void SoundCloudAPI::LoadRecommendations(int64_t trackId, bool createPlaylist, IAIMPPlaylistItem *item) {
     IAIMPString *name = nullptr;
-    std::wstring plName(L"Recommended for ");
+    std::wstring plName(Plugin::instance()->Lang(L"SoundCloud\\Recommended"));
     if (item && SUCCEEDED(item->GetValueAsObject(AIMP_PLAYLISTITEM_PROPID_DISPLAYTEXT, IID_IAIMPString, reinterpret_cast<void  **>(&name)))) {
         plName += name->GetData();
         name->Release();

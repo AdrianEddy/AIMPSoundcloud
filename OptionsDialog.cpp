@@ -56,7 +56,20 @@ void WINAPI OptionsDialog::DestroyFrame() {
 
 void WINAPI OptionsDialog::Notification(int ID) {
     switch (ID) {
-        case AIMP_SERVICE_OPTIONSDIALOG_NOTIFICATION_LOCALIZATION: break;
+        case AIMP_SERVICE_OPTIONSDIALOG_NOTIFICATION_LOCALIZATION: {
+            SetDlgItemText(m_handle, IDC_MAINFRAME,       m_plugin->Lang(L"SoundCloud.Options\\Title").c_str());
+            SetDlgItemText(m_handle, IDC_AUTHGROUPBOX,    m_plugin->Lang(L"SoundCloud.Options\\Account").c_str());
+            SetDlgItemText(m_handle, IDC_GENERALGROUPBOX, m_plugin->Lang(L"SoundCloud.Options\\General").c_str());
+            SetDlgItemText(m_handle, IDC_ADDDURATION,     m_plugin->Lang(L"SoundCloud.Options\\AddDurationToTitle").c_str());
+            SetDlgItemText(m_handle, IDC_LIMITSTREAM,     m_plugin->Lang(L"SoundCloud.Options\\LimitUserStream", 0).c_str());
+            SetDlgItemText(m_handle, IDC_TRACKS,          m_plugin->Lang(L"SoundCloud.Options\\LimitUserStream", 1).c_str());
+            SetDlgItemText(m_handle, IDC_MONITORGROUPBOX, m_plugin->Lang(L"SoundCloud.Options\\MonitorURLs").c_str());
+            SetDlgItemText(m_handle, IDC_MONITORLIKES,    m_plugin->Lang(L"SoundCloud.Options\\MonitorLikes").c_str());
+            SetDlgItemText(m_handle, IDC_MONITORSTREAM,   m_plugin->Lang(L"SoundCloud.Options\\MonitorStream").c_str());
+            SetDlgItemText(m_handle, IDC_CHECKONSTARTUP,  m_plugin->Lang(L"SoundCloud.Options\\CheckAtStartup").c_str());
+            SetDlgItemText(m_handle, IDC_CHECKEVERY,      m_plugin->Lang(L"SoundCloud.Options\\CheckEvery", 0).c_str());
+            SetDlgItemText(m_handle, IDC_HOURS,           m_plugin->Lang(L"SoundCloud.Options\\CheckEvery", 1).c_str());
+        } break;
         case AIMP_SERVICE_OPTIONSDIALOG_NOTIFICATION_LOAD: {
             m_userId    = Config::GetInt64(L"UserId");
             m_userName  = Config::GetString(L"UserName");
@@ -548,7 +561,13 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
 }
 
 void OptionsDialog::Connect(std::function<void()> onFinished) {
-    (new TcpServer(38916, [onFinished](TcpServer *s, char *request, std::string &response) -> bool {
+    // For some reason AIMP can't get lang strings from different thread, so preload them here
+    std::string s1 = Tools::ToString(Plugin::instance()->Lang(L"SoundCloud\\ConnectStatusOK", 0)),
+                s2 = Tools::ToString(Plugin::instance()->Lang(L"SoundCloud\\ConnectStatusOK", 1)),
+                s3 = Tools::ToString(Plugin::instance()->Lang(L"SoundCloud\\ConnectStatusError", 0)),
+                s4 = Tools::ToString(Plugin::instance()->Lang(L"SoundCloud\\ConnectStatusError", 1));
+    
+    (new TcpServer(38916, [onFinished, s1, s2, s3, s4](TcpServer *s, char *request, std::string &response) -> bool {
         response = "HTTP/1.1 200 OK\r\n"
                    "Content-Type: text/html\r\n"
                    "Connection: close\r\n"
@@ -588,13 +607,13 @@ void OptionsDialog::Connect(std::function<void()> onFinished) {
                 }
             });
 
-            Tools::ReplaceString("%TITLE%", "Authorization granted", response);
-            Tools::ReplaceString("%TEXT%", "You may now close this browser window and return to AIMP.", response);
+            Tools::ReplaceString("%TITLE%", s1, response);
+            Tools::ReplaceString("%TEXT%", s2, response);
             return true;
         }
 
-        Tools::ReplaceString("%TITLE%", "Sorry, an error occurred", response);
-        Tools::ReplaceString("%TEXT%", "Couldn't connect to SoundCloud account. Please return to AIMP and try again.", response);
+        Tools::ReplaceString("%TITLE%", s3, response);
+        Tools::ReplaceString("%TEXT%", s4, response);
         return true;
     }))->Start();
 

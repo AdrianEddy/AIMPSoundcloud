@@ -24,6 +24,13 @@ BOOL CALLBACK AddURLDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
             HICON bitmap;
             icon->GetHICON(&bitmap);
             SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)bitmap);
+            DeleteObject(bitmap);
+
+            SetWindowText (hwnd,                           Plugin::instance()->Lang(L"SoundCloud.AddURL\\Title").c_str());
+            SetDlgItemText(hwnd, IDC_SOUNDCLOUDURLCAPTION, Plugin::instance()->Lang(L"SoundCloud.AddURL\\URL").c_str());
+            SetDlgItemText(hwnd, IDC_CREATENEW,            Plugin::instance()->Lang(L"SoundCloud.AddURL\\CreateNew").c_str());
+            SetDlgItemText(hwnd, IDOK,                     Plugin::instance()->Lang(L"SoundCloud.AddURL\\OK").c_str());
+            SetDlgItemText(hwnd, IDC_PLAYLISTTITLECAPTION, Plugin::instance()->Lang(L"SoundCloud.AddURL\\PlaylistName").c_str());
         } break;
         case WM_COMMAND: {
             switch (LOWORD(wParam)) {
@@ -37,7 +44,9 @@ BOOL CALLBACK AddURLDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
 
                     bool createnew = SendDlgItemMessage(hwnd, IDC_CREATENEW, BM_GETCHECK, NULL, NULL) == BST_CHECKED;
 
-                    SoundCloudAPI::ResolveUrl(url, playlistTitle, createnew);
+                    if (!url.empty()) {
+                        SoundCloudAPI::ResolveUrl(url, playlistTitle, createnew);
+                    }
                     DestroyWindow(hwnd);
                 } break;
                 case IDC_CREATENEW:

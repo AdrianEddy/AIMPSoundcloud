@@ -1,0 +1,46 @@
+﻿[FILE]
+Author=Eddy
+Name=English (EN)
+VersionID=0
+LangId=1033
+
+[SoundCloud]
+ConnectStatusOK=Authorization granted|You may now close this browser window and return to AIMP.
+ConnectStatusError=Sorry, an error occurred|Couldn't connect to SoundCloud account. Please return to AIMP and try again.
+Likes=SoundCloud - Likes|'s likes
+Stream=SoundCloud - Stream|'s stream
+Recommended=Recommended for 
+Prefix=SoundCloud - 
+
+[SoundCloud.Messages]
+Error=Error
+CantResolve=Could not resolve this url.
+
+[SoundCloud.Menu]
+AddURL=SoundCloud URL
+MyTracksAndPlaylists=My tracks and playlists
+MyStream=SoundCloud stream
+MyLikes=SoundCloud likes
+LoadRecommendations=Load recommendations|Here|Create new playlist
+OpenInBrowser=Open in web browser
+AddToExclusions=Add to exclusions
+LikeUnlike=Like / Unlike|Like|Unlike
+
+[SoundCloud.AddURL]
+Title=Add SoundCloud URL
+URL=SoundCloud URL
+CreateNew=Create new playlist
+OK=OK
+PlaylistName=Playlist name (optional)
+
+[SoundCloud.Options]
+Title=SoundCloud
+Account=SoundCloud account
+General=General
+AddDurationToTitle=Add duration to track title
+LimitUserStream=Limit user's stream items to|tracks
+MonitorURLs=Monitor added URLs
+MonitorLikes=Monitor user's likes
+MonitorStream=Monitor user's stream
+CheckAtStartup=Check for new tracks on AIMP startup
+CheckEvery=Check for new tracks every|hours

@@ -3,6 +3,7 @@
 #include "SDK/apiPlugin.h"
 #include "SDK/apiPlaylists.h"
 #include "SDK/apiMessages.h"
+#include "SDK/apiMUI.h"
 #include "OptionsDialog.h"
 #include "Config.h"
 #include "MessageHook.h"
@@ -57,6 +58,8 @@ public:
     std::wstring PlaylistId(IAIMPPlaylist *pl);
     IAIMPPlaylistItem *GetCurrentTrack();
 
+    std::wstring Lang(const std::wstring &key, int part = -1);
+
     enum CallbackFlags {
         FLAG_DELETE_ITEM = 0x01,
         FLAG_STOP_LOOP   = 0x02,
@@ -79,7 +82,7 @@ public:
     void KillMonitorTimer();
 
 private:
-    Plugin() : m_playlistManager(nullptr), m_messageDispatcher(nullptr), m_monitorTimer(0), m_gdiplusToken(0), m_core(nullptr) {
+    Plugin() : m_playlistManager(nullptr), m_messageDispatcher(nullptr), m_muiService(nullptr), m_monitorTimer(0), m_gdiplusToken(0), m_core(nullptr) {
         AddRef();
     }
     Plugin(const Plugin &);
@@ -90,6 +93,7 @@ private:
     MessageHook *m_messageHook;
     IAIMPServicePlaylistManager *m_playlistManager;
     IAIMPServiceMessageDispatcher *m_messageDispatcher;
+    IAIMPServiceMUI *m_muiService;
 
     UINT_PTR m_monitorTimer;
     std::queue<Config::MonitorUrl> m_monitorPendingUrls;

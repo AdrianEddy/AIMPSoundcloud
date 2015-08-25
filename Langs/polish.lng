@@ -1,0 +1,46 @@
+﻿[FILE]
+Author=Eddy
+Name=Polish (PL)
+VersionID=0
+LangId=1045
+
+[SoundCloud]
+ConnectStatusOK=Autoryzacja pomyślna|Możesz teraz zamknąć to okno i wrócić do AIMPa.
+ConnectStatusError=Wystąpił błąd|Nie udało się połączyć z kontem SoundCloud. Wróć do AIMPa i spróbuj ponownie.
+Likes=SoundCloud - Ulubione| - moje polubienia
+Stream=SoundCloud - Tablica| - moja tablica
+Recommended=Proponowane dla 
+Prefix=SoundCloud - 
+
+[SoundCloud.Messages]
+Error=Błąd
+CantResolve=Nie udało się wczytać tego adresu.
+
+[SoundCloud.Menu]
+AddURL=SoundCloud URL
+MyTracksAndPlaylists=Moje utwory i playlisty
+MyStream=SoundCloud - tablica
+MyLikes=SoundCloud - ulubione
+LoadRecommendations=Wczytaj proponowane|Tutaj|Utwórz nową playlistę
+OpenInBrowser=Otwórz w przeglądarce
+AddToExclusions=Dodaj do wyjątków
+LikeUnlike=Polub / Odlub|Polub|Odlub
+
+[SoundCloud.AddURL]
+Title=Dodaj adres SoundCloud
+URL=Adres SoundCloud 
+CreateNew=Utwórz nową playlistę
+OK=OK
+PlaylistName=Nazwa playlisty (opcjonalnie)
+
+[SoundCloud.Options]
+Title=SoundCloud
+Account=Konto SoundCloud
+General=Ogólne
+AddDurationToTitle=Dodaj czas trwania do tytułu utworu
+LimitUserStream=Limituj tablicę użytkownika|utworów
+MonitorURLs=Monitoruj dodane adresy
+MonitorLikes=Monitoruj ulubione
+MonitorStream=Monitoruj tablicę
+CheckAtStartup=Sprawdzaj czy są nowe utwory przy starcie AIMPa
+CheckEvery=Sprawdzaj nowe utwory co|godzin

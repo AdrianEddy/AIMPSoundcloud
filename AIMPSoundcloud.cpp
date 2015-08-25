@@ -26,6 +26,9 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
 
     m_core = Core;
 
+    if (FAILED(m_core->QueryInterface(IID_IAIMPServiceMUI, reinterpret_cast<void **>(&m_muiService))))
+        return E_FAIL;
+
       if (!Config::Init(Core)) return E_FAIL;
     if (!AimpHTTP::Init(Core)) return E_FAIL;
     if (!AimpMenu::Init(Core)) return E_FAIL;
@@ -35,24 +38,24 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
     m_accessToken = Config::GetString(L"AccessToken");
 
     if (AimpMenu *addMenu = AimpMenu::Get(AIMP_MENUID_PLAYER_PLAYLIST_ADDING)) {
-        addMenu->Add(L"SoundCloud URL", [this](IAIMPMenuItem *) { AddURLDialog::Show(); }, IDB_ICON)->Release();
+        addMenu->Add(Lang(L"SoundCloud.Menu\\AddURL"), [this](IAIMPMenuItem *) { AddURLDialog::Show(); }, IDB_ICON)->Release();
         delete addMenu;
     }
 
     if (AimpMenu *playlistMenu = AimpMenu::Get(AIMP_MENUID_PLAYER_PLAYLIST_MANAGE)) {
-        playlistMenu->Add(L"My tracks and playlists", [this](IAIMPMenuItem *) {
+        playlistMenu->Add(Lang(L"SoundCloud.Menu\\MyTracksAndPlaylists"), [this](IAIMPMenuItem *) {
             SoundCloudAPI::LoadMyTracksAndPlaylists();
         }, IDB_ICON, [this](IAIMPMenuItem *item) {
             item->SetValueAsInt32(AIMP_MENUITEM_PROPID_VISIBLE, isConnected());
         })->Release();
-        playlistMenu->Add(L"SoundCloud stream", [this](IAIMPMenuItem *) {
+        playlistMenu->Add(Lang(L"SoundCloud.Menu\\MyStream"), [this](IAIMPMenuItem *) {
             if (!isConnected()) {
                 OptionsDialog::Connect(SoundCloudAPI::LoadStream);
                 return;
             }
             SoundCloudAPI::LoadStream();
         }, IDB_ICON)->Release();
-        playlistMenu->Add(L"SoundCloud likes", [this](IAIMPMenuItem *) {
+        playlistMenu->Add(Lang(L"SoundCloud.Menu\\MyLikes"), [this](IAIMPMenuItem *) {
             if (!isConnected()) {
                 OptionsDialog::Connect(SoundCloudAPI::LoadLikes);
                 return;
@@ -73,8 +76,8 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
     };
 
     if (AimpMenu *contextMenu = AimpMenu::Get(AIMP_MENUID_PLAYER_PLAYLIST_CONTEXT_FUNCTIONS)) {
-        AimpMenu *recommendations = new AimpMenu(contextMenu->Add(L"Load recommendations", nullptr, IDB_ICON, enableIfValid));
-        recommendations->Add(L"Here", [this](IAIMPMenuItem *) {
+        AimpMenu *recommendations = new AimpMenu(contextMenu->Add(Lang(L"SoundCloud.Menu\\LoadRecommendations", 0), nullptr, IDB_ICON, enableIfValid));
+        recommendations->Add(Lang(L"SoundCloud.Menu\\LoadRecommendations", 1), [this](IAIMPMenuItem *) {
             ForSelectedTracks([](IAIMPPlaylist *pl, IAIMPPlaylistItem *item, int64_t id) -> int {
                 if (id > 0) {
                     SoundCloudAPI::LoadRecommendations(id, false, item);
@@ -82,7 +85,7 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
                 return 0;
             });
         })->Release();
-        recommendations->Add(L"Create new playlist", [this](IAIMPMenuItem *) {
+        recommendations->Add(Lang(L"SoundCloud.Menu\\LoadRecommendations", 2), [this](IAIMPMenuItem *) {
             ForSelectedTracks([](IAIMPPlaylist *pl, IAIMPPlaylistItem *item, int64_t id) -> int {
                 if (id > 0) {
                     SoundCloudAPI::LoadRecommendations(id, true, item);
@@ -92,7 +95,7 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
         })->Release();
         delete recommendations;
 
-        contextMenu->Add(L"Open in web browser", [this](IAIMPMenuItem *) {
+        contextMenu->Add(Lang(L"SoundCloud.Menu\\OpenInBrowser"), [this](IAIMPMenuItem *) {
             ForSelectedTracks([this](IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t id) -> int {
                 if (id > 0) {
                     wchar_t url[256];
@@ -110,7 +113,7 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
             });
         }, IDB_ICON, enableIfValid)->Release();
 
-        contextMenu->Add(L"Add to exclusions", [this](IAIMPMenuItem *) {
+        contextMenu->Add(Lang(L"SoundCloud.Menu\\AddToExclusions"), [this](IAIMPMenuItem *) {
             ForSelectedTracks([](IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t id) -> int {
                 if (id > 0) {
                     Config::TrackExclusions.insert(id);
@@ -121,7 +124,7 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
             Config::SaveExtendedConfig();
         }, IDB_ICON, enableIfValid)->Release();
 
-        contextMenu->Add(L"Like / Unlike", [this](IAIMPMenuItem *) {
+        contextMenu->Add(Lang(L"SoundCloud.Menu\\LikeUnlike", 0), [this](IAIMPMenuItem *) {
             ForSelectedTracks([](IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t id) -> int {
                 if (id > 0) {
                     if (Config::Likes.find(id) != Config::Likes.end()) {
@@ -159,11 +162,11 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
             item->SetValueAsInt32(AIMP_MENUITEM_PROPID_VISIBLE, true);
 
             if (unlikes == 0) {
-                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, new AIMPString(L"Like"));
+                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, new AIMPString(Lang(L"SoundCloud.Menu\\LikeUnlike", 1))); // Like
             } else if (likes == 0) {
-                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, new AIMPString(L"Unlike"));
+                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, new AIMPString(Lang(L"SoundCloud.Menu\\LikeUnlike", 2))); // Unlike
             } else {
-                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, new AIMPString(L"Like / Unlike"));
+                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, new AIMPString(Lang(L"SoundCloud.Menu\\LikeUnlike", 0))); // Like / Unlike
             }
         })->Release();
         delete contextMenu;
@@ -220,22 +223,22 @@ void Plugin::MonitorCallback() {
             m_instance->m_monitorPendingUrls.push(x);
         }
         if (m_instance->isConnected() && Config::GetInt32(L"MonitorLikes", 1)) {
-            if (IAIMPPlaylist *pl = m_instance->GetPlaylist(L"Soundcloud - Likes", false)) {
+            if (IAIMPPlaylist *pl = m_instance->GetPlaylist(m_instance->Lang(L"SoundCloud\\Likes", 0), false)) {
                 std::wstring playlistId = m_instance->PlaylistId(pl);
                 pl->Release();
                 if (!playlistId.empty()) {
-                    std::wstring refName = Config::GetString(L"UserName") + L"'s likes";
+                    std::wstring refName = Config::GetString(L"UserName") + m_instance->Lang(L"SoundCloud\\Likes", 1);
 
                     m_instance->m_monitorPendingUrls.push({ L"https://api.soundcloud.com/me/favorites?limit=200", playlistId, SoundCloudAPI::LoadingState::LoadingLikes, refName });
                 }
             }
         }
         if (m_instance->isConnected() && Config::GetInt32(L"MonitorStream", 1)) {
-            if (IAIMPPlaylist *pl = m_instance->GetPlaylist(L"Soundcloud - Stream", false)) {
+            if (IAIMPPlaylist *pl = m_instance->GetPlaylist(m_instance->Lang(L"SoundCloud\\Stream", 0), false)) {
                 std::wstring playlistId = m_instance->PlaylistId(pl);
                 pl->Release();
                 if (!playlistId.empty()) {
-                    std::wstring refName = Config::GetString(L"UserName") + L"'s stream";
+                    std::wstring refName = Config::GetString(L"UserName") + m_instance->Lang(L"SoundCloud\\Stream", 1);
                     const int flags = SoundCloudAPI::LoadingState::IgnoreExistingPosition | SoundCloudAPI::LoadingState::IgnoreNextPage;
 
                     m_instance->m_monitorPendingUrls.push({ L"https://api.soundcloud.com/me/activities?limit=300", playlistId, flags, refName });
@@ -271,6 +274,7 @@ HRESULT WINAPI Plugin::Finalize() {
     Timer::Cancel(m_monitorTimer);
     m_messageDispatcher->Unhook(m_messageHook);
     m_messageDispatcher->Release();
+    m_muiService->Release();
     m_playlistManager->Release();
 
     AimpMenu::Deinit();
@@ -462,4 +466,24 @@ HWND Plugin::GetMainWindowHandle() {
         return handle;
     }
     return NULL;
+}
+
+std::wstring Plugin::Lang(const std::wstring &key, int part) {
+    std::wstring ret;
+    if (!m_muiService)
+        return ret;
+
+    IAIMPString *value = nullptr;
+    if (part > -1) {
+        if (SUCCEEDED(m_muiService->GetValuePart(new AIMPString(key), part, &value))) {
+            ret = value->GetData();
+            value->Release();
+        }
+    } else {
+        if (SUCCEEDED(m_muiService->GetValue(new AIMPString(key), &value))) {
+            ret = value->GetData();
+            value->Release();
+        }
+    }
+    return ret;
 }
