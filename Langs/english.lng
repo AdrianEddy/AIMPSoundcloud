@@ -36,6 +36,7 @@ PlaylistName=Playlist name (optional)
 [SoundCloud.Options]
 Title=SoundCloud
 Account=SoundCloud account
+ConnectButton=Connect|Disconnect
 General=General
 AddDurationToTitle=Add duration to track title
 LimitUserStream=Limit user's stream items to|tracks

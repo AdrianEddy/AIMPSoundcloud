@@ -15,6 +15,10 @@
 #include <gdiplus.h>
 #include "GdiPlusImageLoader.h"
 
+#define WM_SET_MY_FOCUS WM_USER + 1
+#define WM_UPDATESIZE   WM_USER + 2
+#define WM_UPDATELOCALE WM_USER + 3
+
 extern HINSTANCE g_hInst;
 
 OptionsDialog::OptionsDialog(Plugin *plugin) : m_userId(0), m_plugin(plugin), m_handle(NULL), m_currentFocusControl(0) {
@@ -73,6 +77,7 @@ void WINAPI OptionsDialog::Notification(int ID) {
             SetDlgItemText(m_handle, IDC_CHECKONSTARTUP,  m_plugin->Lang(L"SoundCloud.Options\\CheckAtStartup").c_str());
             SetDlgItemText(m_handle, IDC_CHECKEVERY,      m_plugin->Lang(L"SoundCloud.Options\\CheckEvery", 0).c_str());
             SetDlgItemText(m_handle, IDC_HOURS,           m_plugin->Lang(L"SoundCloud.Options\\CheckEvery", 1).c_str());
+            SendDlgItemMessage(m_handle, IDC_CONNECTBTN, WM_UPDATELOCALE, 0, 0);
         } break;
         case AIMP_SERVICE_OPTIONSDIALOG_NOTIFICATION_LOAD: {
             m_userId    = Config::GetInt64(L"UserId");
@@ -177,11 +182,6 @@ void OptionsDialog::LoadProfileInfo() {
 }
 
 void OptionsDialog::UpdateProfileInfo() {
-    RECT rc;
-    HWND authGroupBox = GetDlgItem(m_handle, IDC_AUTHGROUPBOX);
-    GetClientRect(authGroupBox, &rc);
-    MapWindowPoints(authGroupBox, m_handle, (LPPOINT)&rc, 2);
-
     if (m_userId > 0 && m_plugin->isConnected()) {
         SendDlgItemMessage(m_handle, IDC_USERNAME, WM_SETTEXT, 0, (LPARAM)m_userName.c_str());
 
@@ -190,8 +190,7 @@ void OptionsDialog::UpdateProfileInfo() {
             uinfo = m_userLogin + L"\r\n" + m_userInfo;
         SendDlgItemMessage(m_handle, IDC_USERINFO, WM_SETTEXT, 0, (LPARAM)uinfo.c_str());
 
-        Gdiplus::Bitmap *btnImage = getConnectBtnImage(true);
-        SetWindowPos(GetDlgItem(m_handle, IDC_CONNECTBTN), NULL, rc.right - btnImage->GetWidth() - 10, rc.bottom - btnImage->GetHeight() - 10, btnImage->GetWidth(), btnImage->GetHeight(), SWP_NOZORDER);
+        SendDlgItemMessage(m_handle, IDC_CONNECTBTN, WM_UPDATESIZE, 0, 0);
 
         GdiPlusImageLoader avatar(Config::PluginConfigFolder() + L"user_avatar.jpg");
         HBITMAP hbm = nullptr;
@@ -203,69 +202,116 @@ void OptionsDialog::UpdateProfileInfo() {
         SendDlgItemMessage(m_handle, IDC_USERINFO, WM_SETTEXT, 0, NULL);
         SendDlgItemMessage(m_handle, IDC_USERNAME, WM_SETTEXT, 0, NULL);
         SendDlgItemMessage(m_handle, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, NULL);
-
-        Gdiplus::Bitmap *btnImage = getConnectBtnImage(false);
-        SetWindowPos(GetDlgItem(m_handle, IDC_CONNECTBTN), NULL, rc.left + ((rc.right - rc.left) - btnImage->GetWidth()) / 2, rc.top + ((rc.bottom - rc.top) - btnImage->GetHeight()) / 2, btnImage->GetWidth(), btnImage->GetHeight(), SWP_NOZORDER);
+        SendDlgItemMessage(m_handle, IDC_CONNECTBTN, WM_UPDATESIZE, 0, 0);
     }
+    RECT rc;
     GetClientRect(m_handle, &rc);
     RedrawWindow(m_handle, &rc, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
 }
 
+void GetRoundRectPath(Gdiplus::GraphicsPath *pPath, Gdiplus::Rect r, int dia) {
+    if (dia > r.Width)	dia = r.Width;
+    if (dia > r.Height)	dia = r.Height;
+
+    Gdiplus::Rect Corner(r.X, r.Y, dia, dia);
+    pPath->Reset();
+    pPath->AddArc(Corner, 180, 90);
+    if (dia == 20) {
+        Corner.Width += 1;
+        Corner.Height += 1;
+        r.Width -= 1; r.Height -= 1;
+    }
+    Corner.X += (r.Width - dia - 1);
+    pPath->AddArc(Corner, 270, 90);
+    Corner.Y += (r.Height - dia - 1);
+    pPath->AddArc(Corner, 0, 90);
+    Corner.X -= (r.Width - dia - 1);
+    pPath->AddArc(Corner, 90, 90);
+    pPath->CloseFigure();
+}
+
 LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
+    using namespace Gdiplus;
+    struct PaintData {
+        GdiPlusImageLoader Logo;
+        std::wstring Text;
+        Font Font;
+        Pen BorderPen;
+        ARGB Gradient[2];
+        SolidBrush TextColor;
+        Pen LinePen;
+        int LogoOffset;
+        int Margin;
+        int Height;
+    };
+
+    static PaintData connect    { { IDB_WHITELOGO,  L"PNG" }, {}, { L"Tahoma", 10, FontStyleBold }, 0xffd05300, { 0xfffb8112, 0xffff3701 }, 0xffffffff, 0xfffe9455, 47, 66, 29 };
+    static PaintData disconnect { { IDB_ORANGELOGO, L"PNG" }, {}, { L"Tahoma", 10                }, 0xffbfbfbf, { 0xffffffff, 0xfff1f1f1 }, 0xff333333, 0xffe4e4e4, 37, 56, 25 };
+
+    static PaintData *currentBtn = nullptr;
     static OptionsDialog *dialog = nullptr;
-    static HBRUSH bgBrush;
-    static HBITMAP hBmp = nullptr;
-    static bool previousConnected = false;
     static bool mouseOver = false;
     static bool customFocus = false;
+    static bool connected = false;
+
+    static Rect r;
+    static RectF layoutRect;
+    static SolidBrush focusBrush(0x11000000);
+    static Gdiplus::GraphicsPath borderPath;
+    static Gdiplus::StringFormat format;
+
     if (!dialog) {
         dialog = (OptionsDialog *)dwRefData;
-        Gdiplus::Bitmap *btnImage = getConnectBtnImage(dialog->m_plugin->isConnected());
-        btnImage->GetHBITMAP(NULL, &hBmp);
-        previousConnected = dialog->m_plugin->isConnected();
-        bgBrush = CreateSolidBrush(RGB(240, 240, 240));
-    } else if (previousConnected != dialog->m_plugin->isConnected()) {
-        if (hBmp)
-            DeleteObject(hBmp);
-        Gdiplus::Bitmap *btnImage = getConnectBtnImage(dialog->m_plugin->isConnected());
-        btnImage->GetHBITMAP(NULL, &hBmp);
-        previousConnected = dialog->m_plugin->isConnected();
+        format.SetAlignment(StringAlignmentCenter);
+        format.SetLineAlignment(StringAlignmentCenter);
     }
     
     switch (uMsg) {
-        case WM_MOUSELEAVE:
-            mouseOver = false;
+        case WM_MOUSELEAVE: mouseOver = false; break;
+        case WM_MOUSEMOVE:  mouseOver = true;  break;
+        case WM_SET_MY_FOCUS: customFocus = (wParam == 1); break;
+        case WM_UPDATESIZE: {
+            HWND parent = GetDlgItem(dialog->m_handle, IDC_AUTHGROUPBOX);
+            RECT rc;
+            GetClientRect(parent, &rc);
+            MapWindowPoints(parent, dialog->m_handle, (LPPOINT)&rc, 2);
+            RectF textRect;
+            if (connected = dialog->m_plugin->isConnected()) { // Intentional assignment(=) here
+                currentBtn = &disconnect;
+            } else {
+                currentBtn = &connect;
+            }
+            Gdiplus::Graphics(hWnd).MeasureString(currentBtn->Text.c_str(), currentBtn->Text.size(), &currentBtn->Font, PointF(0, 0), &textRect);
+            r.Width = textRect.Width + currentBtn->Margin;
+            r.Height = currentBtn->Height;
+            if (connected) {
+                SetWindowPos(hWnd, NULL, rc.right - r.Width - 10, rc.bottom - r.Height - 10, r.Width, r.Height, SWP_NOZORDER);
+            } else {
+                SetWindowPos(hWnd, NULL, rc.left + ((rc.right - rc.left) - r.Width) / 2, rc.top + ((rc.bottom - rc.top) - r.Height) / 2, r.Width, r.Height, SWP_NOZORDER);
+            }
+            
+            GetRoundRectPath(&borderPath, r, 8);
+            layoutRect = RectF(currentBtn->LogoOffset, 0, r.Width - currentBtn->LogoOffset, r.Height);
+        } break;
+        case WM_UPDATELOCALE:
+            connect.Text    = Plugin::instance()->Lang(L"SoundCloud.Options\\ConnectButton", 0);
+            disconnect.Text = Plugin::instance()->Lang(L"SoundCloud.Options\\ConnectButton", 1);
         break;
-        case WM_MOUSEMOVE:
-            mouseOver = true;
-        break;
-        case WM_USER:
-            customFocus = wParam == 1;
-        break;
-        case WM_KILLFOCUS:
-            customFocus = false;
-        break;
+        case WM_KILLFOCUS: customFocus = false; break;
         case WM_PAINT: {
-            RECT rect;
-            GetClientRect(hWnd, &rect);
-
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
+            Gdiplus::Graphics g(hdc);
 
-            FillRect(hdc, &rect, bgBrush);
+            LinearGradientBrush linGrBrush(Point(0, 0), Point(0, r.Height), currentBtn->Gradient[mouseOver ? 1 : 0], currentBtn->Gradient[mouseOver ? 0 : 1]);
+            g.FillPath(&linGrBrush, &borderPath);
+            if (customFocus)
+                g.FillPath(&focusBrush, &borderPath);
 
-            HDC hdcMem = CreateCompatibleDC(hdc);
-            SelectObject(hdcMem, hBmp);
-
-            BITMAP bitmap;
-            GetObject(hBmp, sizeof(bitmap), &bitmap);
-            BLENDFUNCTION bf;
-            bf.BlendOp = AC_SRC_OVER;
-            bf.BlendFlags = 0;
-            bf.SourceConstantAlpha = mouseOver ? 190 : customFocus? 145 : 255;
-            bf.AlphaFormat = AC_SRC_ALPHA;
-            AlphaBlend(hdc, 0, 0, rect.right, rect.bottom, hdcMem, 0, 0, bitmap.bmWidth, bitmap.bmHeight, bf);
-            DeleteDC(hdcMem);
+            g.DrawImage(currentBtn->Logo, 7, 7, currentBtn->Logo->GetWidth(), currentBtn->Logo->GetHeight());
+            g.DrawLine(&currentBtn->LinePen, currentBtn->LogoOffset, 0, currentBtn->LogoOffset, r.Height);
+            g.DrawString(currentBtn->Text.c_str(), currentBtn->Text.size(), &currentBtn->Font, layoutRect, &format, &currentBtn->TextColor);
+            g.DrawPath(&currentBtn->BorderPen, &borderPath);
 
             EndPaint(hWnd, &ps);
             return TRUE;
@@ -274,8 +320,6 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
             SetCursor(LoadCursor(NULL, IDC_HAND));
             return TRUE;
         case WM_DESTROY:
-            DeleteObject(bgBrush);
-            DeleteObject(hBmp);
             dialog = nullptr;
         break;
         case WM_NCDESTROY:
@@ -677,13 +721,13 @@ BOOL WINAPI OptionsDialog::SelectFirstControl() {
     m_currentFocusControl = 0;
     HWND hWnd = GetDlgItem(m_handle, s_tabOrder[m_currentFocusControl]);
     SetFocus(hWnd);
-    SendMessage(hWnd, WM_USER, 1, 0);
+    SendMessage(hWnd, WM_SET_MY_FOCUS, 1, 0);
     return true;
 }
 
 BOOL WINAPI OptionsDialog::SelectNextControl(BOOL FindForward, BOOL CheckTabStop) {
     if (s_tabOrder[m_currentFocusControl] == IDC_CONNECTBTN) {
-        SendMessage(GetDlgItem(m_handle, IDC_CONNECTBTN), WM_USER, 0, 0);
+        SendMessage(GetDlgItem(m_handle, IDC_CONNECTBTN), WM_SET_MY_FOCUS, 0, 0);
     }
     if (FindForward) {
         if (m_currentFocusControl + 1 > s_tabOrder.size() - 1)
@@ -699,7 +743,7 @@ BOOL WINAPI OptionsDialog::SelectNextControl(BOOL FindForward, BOOL CheckTabStop
     HWND hWnd = GetDlgItem(m_handle, s_tabOrder[m_currentFocusControl]);
     SetFocus(hWnd);
     if (s_tabOrder[m_currentFocusControl] == IDC_CONNECTBTN) {
-        SendMessage(hWnd, WM_USER, 1, 0);
+        SendMessage(hWnd, WM_SET_MY_FOCUS, 1, 0);
     }
     return true;
 }

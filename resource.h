@@ -3,6 +3,8 @@
 #endif
 
 #define IDD_SETTINGS                            101
+#define IDB_WHITELOGO                           106
+#define IDB_ORANGELOGO                          107
 #define IDB_CONNECT                             108
 #define IDB_DISCONNECT                          109
 #define IDB_ICON                                110

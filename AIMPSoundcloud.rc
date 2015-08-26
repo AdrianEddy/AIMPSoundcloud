@@ -13,15 +13,11 @@
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 IDR_CONNECTRES1    CONNECTRESP    "Resources\\connect_status.html"
 
-
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+IDB_WHITELOGO      PNG            "Resources\\white_logo.png"
 
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-IDB_CONNECT        PNG            "Resources\\btn-connect-l.png"
-
-
-LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-IDB_DISCONNECT     PNG            "Resources\\btn-disconnect-m.png"
-
+IDB_ORANGELOGO     PNG            "Resources\\orange_logo.png"
 
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 IDB_ICON           PNG            "Resources\\icon.png"
