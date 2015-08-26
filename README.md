@@ -17,3 +17,10 @@ Features
 - - Delete current song from disk = Unlike and add to exclusions
 - -  Add to bookmarks = Like
 - Can load multiple SoundCloud playlists to one AIMP playlist (with grouping enabled in AIMP)
+
+Screenshots
+---
+![Options dialog](/_screenshots/options.png)
+![Playlists menu](/_screenshots/playlists.png)
+![Context menu](/_screenshots/contextmenu.png)
+![Add URL dialog](/_screenshots/addurl.png)
