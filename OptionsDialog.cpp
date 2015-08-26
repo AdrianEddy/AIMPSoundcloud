@@ -216,6 +216,8 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
     static HBRUSH bgBrush;
     static HBITMAP hBmp = nullptr;
     static bool previousConnected = false;
+    static bool mouseOver = false;
+    static bool customFocus = false;
     if (!dialog) {
         dialog = (OptionsDialog *)dwRefData;
         Gdiplus::Bitmap *btnImage = getConnectBtnImage(dialog->m_plugin->isConnected());
@@ -231,6 +233,18 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
     }
     
     switch (uMsg) {
+        case WM_MOUSELEAVE:
+            mouseOver = false;
+        break;
+        case WM_MOUSEMOVE:
+            mouseOver = true;
+        break;
+        case WM_USER:
+            customFocus = wParam == 1;
+        break;
+        case WM_KILLFOCUS:
+            customFocus = false;
+        break;
         case WM_PAINT: {
             RECT rect;
             GetClientRect(hWnd, &rect);
@@ -248,7 +262,7 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
             BLENDFUNCTION bf;
             bf.BlendOp = AC_SRC_OVER;
             bf.BlendFlags = 0;
-            bf.SourceConstantAlpha = (GetFocus() == hWnd) ? 145 : 255;
+            bf.SourceConstantAlpha = mouseOver ? 190 : customFocus? 145 : 255;
             bf.AlphaFormat = AC_SRC_ALPHA;
             AlphaBlend(hdc, 0, 0, rect.right, rect.bottom, hdcMem, 0, 0, bitmap.bmWidth, bitmap.bmHeight, bf);
             DeleteDC(hdcMem);
@@ -661,11 +675,16 @@ static std::vector<int> s_tabOrder({ IDC_CONNECTBTN,
 
 BOOL WINAPI OptionsDialog::SelectFirstControl() {
     m_currentFocusControl = 0;
-    SetFocus(GetDlgItem(m_handle, s_tabOrder[m_currentFocusControl]));
+    HWND hWnd = GetDlgItem(m_handle, s_tabOrder[m_currentFocusControl]);
+    SetFocus(hWnd);
+    SendMessage(hWnd, WM_USER, 1, 0);
     return true;
 }
 
 BOOL WINAPI OptionsDialog::SelectNextControl(BOOL FindForward, BOOL CheckTabStop) {
+    if (s_tabOrder[m_currentFocusControl] == IDC_CONNECTBTN) {
+        SendMessage(GetDlgItem(m_handle, IDC_CONNECTBTN), WM_USER, 0, 0);
+    }
     if (FindForward) {
         if (m_currentFocusControl + 1 > s_tabOrder.size() - 1)
             return false;
@@ -677,7 +696,10 @@ BOOL WINAPI OptionsDialog::SelectNextControl(BOOL FindForward, BOOL CheckTabStop
 
         --m_currentFocusControl;
     }
-
-    SetFocus(GetDlgItem(m_handle, s_tabOrder[m_currentFocusControl]));
+    HWND hWnd = GetDlgItem(m_handle, s_tabOrder[m_currentFocusControl]);
+    SetFocus(hWnd);
+    if (s_tabOrder[m_currentFocusControl] == IDC_CONNECTBTN) {
+        SendMessage(hWnd, WM_USER, 1, 0);
+    }
     return true;
 }
