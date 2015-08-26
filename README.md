@@ -18,6 +18,10 @@ Features
 - -  Add to bookmarks = Like
 - Can load multiple SoundCloud playlists to one AIMP playlist (with grouping enabled in AIMP)
 
+Download
+---
+[http://www.aimp.ru/forum/index.php?topic=49938](http://www.aimp.ru/forum/index.php?topic=49938)
+
 Screenshots
 ---
 ![Options dialog](/_screenshots/options.png)

@@ -18,6 +18,7 @@
 #define WM_SET_MY_FOCUS WM_USER + 1
 #define WM_UPDATESIZE   WM_USER + 2
 #define WM_UPDATELOCALE WM_USER + 3
+#define WM_SUBCLASSINIT WM_USER + 4
 
 extern HINSTANCE g_hInst;
 
@@ -254,13 +255,12 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
     static Gdiplus::GraphicsPath borderPath;
     static Gdiplus::StringFormat format;
 
-    if (!dialog) {
-        dialog = (OptionsDialog *)dwRefData;
-        format.SetAlignment(StringAlignmentCenter);
-        format.SetLineAlignment(StringAlignmentCenter);
-    }
-    
     switch (uMsg) {
+        case WM_SUBCLASSINIT: {
+            dialog = (OptionsDialog *)dwRefData;
+            format.SetAlignment(StringAlignmentCenter);
+            format.SetLineAlignment(StringAlignmentCenter);
+        } break;
         case WM_MOUSELEAVE:   mouseOver = false; break;
         case WM_MOUSEMOVE:    mouseOver = true; break;
         case WM_SET_MY_FOCUS: customFocus = (wParam == 1); break;
@@ -270,6 +270,8 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
             disconnect.Text = Plugin::instance()->Lang(L"SoundCloud.Options\\ConnectButton", 1);
         break;
         case WM_UPDATESIZE: {
+            if (!dialog)
+                break;
             HWND parent = GetDlgItem(dialog->m_handle, IDC_AUTHGROUPBOX);
             RECT rc;
             GetClientRect(parent, &rc);
@@ -324,7 +326,6 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
 }
 
 LRESULT CALLBACK OptionsDialog::FrameProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
-    static OptionsDialog *dialog = nullptr;
     static HBRUSH bgBrush;
     static HPEN penOuter;
     static HPEN penInner;
@@ -334,20 +335,15 @@ LRESULT CALLBACK OptionsDialog::FrameProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
     static TRIVERTEX gradient[2];
     static wchar_t text[64];
 
-    if (!dialog) {
-        dialog = (OptionsDialog *)dwRefData;
-
-        GetWindowText(hWnd, text, 64);
-
-        bgBrush = CreateSolidBrush(RGB(240, 240, 240));
-        penOuter = CreatePen(PS_SOLID, 1, RGB(188, 188, 188));
-        penInner = CreatePen(PS_SOLID, 1, RGB(255, 255, 255));
-        captionFont = CreateFont(13, 0, 0, 0, FW_BLACK, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN, L"Tahoma");
-
-    }
-
     switch (uMsg) {
+        case WM_SUBCLASSINIT: {
+            GetWindowText(hWnd, text, 64);
 
+            bgBrush = CreateSolidBrush(RGB(240, 240, 240));
+            penOuter = CreatePen(PS_SOLID, 1, RGB(188, 188, 188));
+            penInner = CreatePen(PS_SOLID, 1, RGB(255, 255, 255));
+            captionFont = CreateFont(13, 0, 0, 0, FW_BLACK, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN, L"Tahoma");
+        } break;
         case WM_SIZE:
             GetClientRect(hWnd, &rect);
 
@@ -390,7 +386,6 @@ LRESULT CALLBACK OptionsDialog::FrameProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
             DeleteObject(penOuter);
             DeleteObject(penInner);
             DeleteObject(captionFont);
-            dialog = nullptr;
         break;
         case WM_NCDESTROY:
             RemoveWindowSubclass(hWnd, FrameProc, uIdSubclass);
@@ -400,22 +395,18 @@ LRESULT CALLBACK OptionsDialog::FrameProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 }
 
 LRESULT CALLBACK OptionsDialog::GroupBoxProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
-    static OptionsDialog *dialog = nullptr;
     static HBRUSH bgBrush;
     static HPEN penOuter;
     static HPEN penInner;
     static HFONT captionFont;
 
-    if (!dialog) {
-        dialog = (OptionsDialog *)dwRefData;
-
-        bgBrush = CreateSolidBrush(RGB(240, 240, 240));
-        penOuter = CreatePen(PS_SOLID, 1, RGB(188, 188, 188));
-        penInner = CreatePen(PS_SOLID, 1, RGB(255, 255, 255));
-        captionFont = CreateFont(13, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN, L"Tahoma");
-    }
-
     switch (uMsg) {
+        case WM_SUBCLASSINIT:
+            bgBrush = CreateSolidBrush(RGB(240, 240, 240));
+            penOuter = CreatePen(PS_SOLID, 1, RGB(188, 188, 188));
+            penInner = CreatePen(PS_SOLID, 1, RGB(255, 255, 255));
+            captionFont = CreateFont(13, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN, L"Tahoma");
+        break;
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
@@ -461,7 +452,6 @@ LRESULT CALLBACK OptionsDialog::GroupBoxProc(HWND hWnd, UINT uMsg, WPARAM wParam
             DeleteObject(penOuter);
             DeleteObject(penInner);
             DeleteObject(captionFont);
-            dialog = nullptr;
         break;
         case WM_NCDESTROY:
             RemoveWindowSubclass(hWnd, GroupBoxProc, uIdSubclass);
@@ -471,24 +461,19 @@ LRESULT CALLBACK OptionsDialog::GroupBoxProc(HWND hWnd, UINT uMsg, WPARAM wParam
 }
 
 LRESULT CALLBACK OptionsDialog::AvatarProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
-    static OptionsDialog *dialog = nullptr;
     static HPEN penOuter;
     static HPEN penInner;
 
-    if (!dialog) {
-        dialog = (OptionsDialog *)dwRefData;
-        penOuter = CreatePen(PS_SOLID, 1, RGB(188, 188, 188));
-        penInner = CreatePen(PS_SOLID, 1, RGB(255, 255, 255));
-    }
-
     switch (uMsg) {
+        case WM_SUBCLASSINIT:
+            penOuter = CreatePen(PS_SOLID, 1, RGB(188, 188, 188));
+            penInner = CreatePen(PS_SOLID, 1, RGB(255, 255, 255));
+        break;
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
 
-            HBITMAP bmp = (HBITMAP)SendMessage(hWnd, STM_GETIMAGE, IMAGE_BITMAP, NULL);
-
-            if (bmp) {
+            if (HBITMAP bmp = (HBITMAP)SendMessage(hWnd, STM_GETIMAGE, IMAGE_BITMAP, NULL)) {
                 HDC hdcMem = CreateCompatibleDC(hdc);
                 SelectObject(hdcMem, bmp);
                 BITMAP bitmap;
@@ -514,7 +499,6 @@ LRESULT CALLBACK OptionsDialog::AvatarProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
             }
             DeleteObject(penOuter);
             DeleteObject(penInner);
-            dialog = nullptr;
         break;
         case WM_NCDESTROY:
             RemoveWindowSubclass(hWnd, AvatarProc, uIdSubclass);
@@ -527,17 +511,16 @@ LRESULT CALLBACK OptionsDialog::LinkProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
     static bool mouseOver = false;
     static bool mouseTracking = false;
     static HFONT versionFont = NULL;
-    if (!versionFont) {
-        versionFont = (HFONT)1; // prevent recursion deadlock
-        HFONT hOrigFont = (HFONT)SendMessage(hWnd, WM_GETFONT, 0, 0);
-        LOGFONT lf;
-        GetObject(hOrigFont, sizeof(lf), &lf);
-        lf.lfUnderline = TRUE;
-        versionFont = CreateFontIndirect(&lf);
-        SendMessage(hWnd, WM_SETFONT, WPARAM(versionFont), TRUE);
-    }
 
     switch (uMsg) {
+        case WM_SUBCLASSINIT: {
+            HFONT hOrigFont = (HFONT)SendMessage(hWnd, WM_GETFONT, 0, 0);
+            LOGFONT lf;
+            GetObject(hOrigFont, sizeof(lf), &lf);
+            lf.lfUnderline = TRUE;
+            versionFont = CreateFontIndirect(&lf);
+            SendMessage(hWnd, WM_SETFONT, WPARAM(versionFont), TRUE);
+        } break;
         case WM_USER: return mouseOver;
         case WM_LBUTTONUP: ShellExecute(hWnd, L"open", L"http://www.aimp.ru/forum/index.php?topic=49938", NULL, NULL, SW_SHOWNORMAL); break;
         case WM_MOUSELEAVE:
@@ -562,6 +545,9 @@ LRESULT CALLBACK OptionsDialog::LinkProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
         case WM_SETCURSOR:
             SetCursor(LoadCursor(NULL, IDC_HAND));
             return TRUE;
+        case WM_DESTROY:
+            DeleteObject(versionFont);
+        break;
         case WM_NCDESTROY:
             RemoveWindowSubclass(hWnd, LinkProc, uIdSubclass);
         break;
@@ -581,13 +567,13 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             dialog->m_handle = hwnd;
             plugin = dialog->m_plugin;
 
-            SetWindowSubclass(GetDlgItem(hwnd, IDC_CONNECTBTN), ButtonProc, 0, /*OptionsDialog*/lParam);
-            SetWindowSubclass(GetDlgItem(hwnd, IDC_MAINFRAME), FrameProc, 0, /*OptionsDialog*/lParam);
-            SetWindowSubclass(GetDlgItem(hwnd, IDC_AUTHGROUPBOX), GroupBoxProc, 0, /*OptionsDialog*/lParam);
-            SetWindowSubclass(GetDlgItem(hwnd, IDC_GENERALGROUPBOX), GroupBoxProc, 0, /*OptionsDialog*/lParam);
-            SetWindowSubclass(GetDlgItem(hwnd, IDC_MONITORGROUPBOX), GroupBoxProc, 0, /*OptionsDialog*/lParam);
-            SetWindowSubclass(GetDlgItem(hwnd, IDC_AVATAR), AvatarProc, 0, /*OptionsDialog*/lParam);
-            SetWindowSubclass(GetDlgItem(hwnd, IDC_VERSION), LinkProc, 0, /*OptionsDialog*/lParam);
+            SetWindowSubclass(GetDlgItem(hwnd, IDC_CONNECTBTN),      ButtonProc,   0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_CONNECTBTN, WM_SUBCLASSINIT, 0, 0);
+            SetWindowSubclass(GetDlgItem(hwnd, IDC_MAINFRAME),       FrameProc,    0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_MAINFRAME, WM_SUBCLASSINIT, 0, 0);
+            SetWindowSubclass(GetDlgItem(hwnd, IDC_AUTHGROUPBOX),    GroupBoxProc, 0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_AUTHGROUPBOX, WM_SUBCLASSINIT, 0, 0);
+            SetWindowSubclass(GetDlgItem(hwnd, IDC_GENERALGROUPBOX), GroupBoxProc, 0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_GENERALGROUPBOX, WM_SUBCLASSINIT, 0, 0);
+            SetWindowSubclass(GetDlgItem(hwnd, IDC_MONITORGROUPBOX), GroupBoxProc, 0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_MONITORGROUPBOX, WM_SUBCLASSINIT, 0, 0);
+            SetWindowSubclass(GetDlgItem(hwnd, IDC_AVATAR),          AvatarProc,   0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_AVATAR, WM_SUBCLASSINIT, 0, 0);
+            SetWindowSubclass(GetDlgItem(hwnd, IDC_VERSION),         LinkProc,     0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_VERSION, WM_SUBCLASSINIT, 0, 0);
 
             SendDlgItemMessage(hwnd, IDC_LIMITSTREAMVALUESPIN, UDM_SETRANGE32, 1, 50000);
             SendDlgItemMessage(hwnd, IDC_CHECKEVERYVALUESPIN, UDM_SETRANGE32, 1, 720);
