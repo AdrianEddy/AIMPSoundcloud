@@ -133,8 +133,6 @@
     <ResourceCompile Include="AIMPSoundcloud.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Resources\btn-connect-m.png" />
-    <Image Include="Resources\btn-disconnect-m.png" />
     <Image Include="Resources\icon.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -131,12 +131,6 @@ void WINAPI OptionsDialog::Notification(int ID) {
     }
 }
 
-inline Gdiplus::Bitmap *getConnectBtnImage(bool connected) {
-    static GdiPlusImageLoader connect(IDB_CONNECT, L"PNG");
-    static GdiPlusImageLoader disconnect(IDB_DISCONNECT, L"PNG");
-    return connected ? disconnect : connect;
-}
-
 void OptionsDialog::LoadProfileInfo() {
     if (m_userId > 0 || m_plugin->getAccessToken().empty()) {
         UpdateProfileInfo();
@@ -190,8 +184,6 @@ void OptionsDialog::UpdateProfileInfo() {
             uinfo = m_userLogin + L"\r\n" + m_userInfo;
         SendDlgItemMessage(m_handle, IDC_USERINFO, WM_SETTEXT, 0, (LPARAM)uinfo.c_str());
 
-        SendDlgItemMessage(m_handle, IDC_CONNECTBTN, WM_UPDATESIZE, 0, 0);
-
         GdiPlusImageLoader avatar(Config::PluginConfigFolder() + L"user_avatar.jpg");
         HBITMAP hbm = nullptr;
         if (avatar) {
@@ -202,16 +194,17 @@ void OptionsDialog::UpdateProfileInfo() {
         SendDlgItemMessage(m_handle, IDC_USERINFO, WM_SETTEXT, 0, NULL);
         SendDlgItemMessage(m_handle, IDC_USERNAME, WM_SETTEXT, 0, NULL);
         SendDlgItemMessage(m_handle, IDC_AVATAR, STM_SETIMAGE, IMAGE_BITMAP, NULL);
-        SendDlgItemMessage(m_handle, IDC_CONNECTBTN, WM_UPDATESIZE, 0, 0);
     }
+    SendDlgItemMessage(m_handle, IDC_CONNECTBTN, WM_UPDATESIZE, 0, 0);
+
     RECT rc;
     GetClientRect(m_handle, &rc);
     RedrawWindow(m_handle, &rc, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
 }
 
 void GetRoundRectPath(Gdiplus::GraphicsPath *pPath, Gdiplus::Rect r, int dia) {
-    if (dia > r.Width)	dia = r.Width;
-    if (dia > r.Height)	dia = r.Height;
+    if (dia > r.Width)  dia = r.Width;
+    if (dia > r.Height) dia = r.Height;
 
     Gdiplus::Rect Corner(r.X, r.Y, dia, dia);
     pPath->Reset();
@@ -219,7 +212,8 @@ void GetRoundRectPath(Gdiplus::GraphicsPath *pPath, Gdiplus::Rect r, int dia) {
     if (dia == 20) {
         Corner.Width += 1;
         Corner.Height += 1;
-        r.Width -= 1; r.Height -= 1;
+        r.Width -= 1;
+        r.Height -= 1;
     }
     Corner.X += (r.Width - dia - 1);
     pPath->AddArc(Corner, 270, 90);
@@ -267,9 +261,14 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
     }
     
     switch (uMsg) {
-        case WM_MOUSELEAVE: mouseOver = false; break;
-        case WM_MOUSEMOVE:  mouseOver = true;  break;
+        case WM_MOUSELEAVE:   mouseOver = false; break;
+        case WM_MOUSEMOVE:    mouseOver = true; break;
         case WM_SET_MY_FOCUS: customFocus = (wParam == 1); break;
+        case WM_KILLFOCUS:    customFocus = false; break;
+        case WM_UPDATELOCALE:
+            connect.Text    = Plugin::instance()->Lang(L"SoundCloud.Options\\ConnectButton", 0);
+            disconnect.Text = Plugin::instance()->Lang(L"SoundCloud.Options\\ConnectButton", 1);
+        break;
         case WM_UPDATESIZE: {
             HWND parent = GetDlgItem(dialog->m_handle, IDC_AUTHGROUPBOX);
             RECT rc;
@@ -293,11 +292,6 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
             GetRoundRectPath(&borderPath, r, 8);
             layoutRect = RectF(currentBtn->LogoOffset, 0, r.Width - currentBtn->LogoOffset, r.Height);
         } break;
-        case WM_UPDATELOCALE:
-            connect.Text    = Plugin::instance()->Lang(L"SoundCloud.Options\\ConnectButton", 0);
-            disconnect.Text = Plugin::instance()->Lang(L"SoundCloud.Options\\ConnectButton", 1);
-        break;
-        case WM_KILLFOCUS: customFocus = false; break;
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
@@ -324,7 +318,7 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
         break;
         case WM_NCDESTROY:
             RemoveWindowSubclass(hWnd, ButtonProc, uIdSubclass);
-            break;
+        break;
     }
     return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
@@ -397,10 +391,10 @@ LRESULT CALLBACK OptionsDialog::FrameProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
             DeleteObject(penInner);
             DeleteObject(captionFont);
             dialog = nullptr;
-            break;
+        break;
         case WM_NCDESTROY:
             RemoveWindowSubclass(hWnd, FrameProc, uIdSubclass);
-            break;
+        break;
     }
     return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
@@ -468,10 +462,10 @@ LRESULT CALLBACK OptionsDialog::GroupBoxProc(HWND hWnd, UINT uMsg, WPARAM wParam
             DeleteObject(penInner);
             DeleteObject(captionFont);
             dialog = nullptr;
-            break;
+        break;
         case WM_NCDESTROY:
             RemoveWindowSubclass(hWnd, GroupBoxProc, uIdSubclass);
-            break;
+        break;
     }
     return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
@@ -521,10 +515,56 @@ LRESULT CALLBACK OptionsDialog::AvatarProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
             DeleteObject(penOuter);
             DeleteObject(penInner);
             dialog = nullptr;
-            break;
+        break;
         case WM_NCDESTROY:
             RemoveWindowSubclass(hWnd, AvatarProc, uIdSubclass);
-            break;
+        break;
+    }
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+LRESULT CALLBACK OptionsDialog::LinkProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
+    static bool mouseOver = false;
+    static bool mouseTracking = false;
+    static HFONT versionFont = NULL;
+    if (!versionFont) {
+        versionFont = (HFONT)1; // prevent recursion deadlock
+        HFONT hOrigFont = (HFONT)SendMessage(hWnd, WM_GETFONT, 0, 0);
+        LOGFONT lf;
+        GetObject(hOrigFont, sizeof(lf), &lf);
+        lf.lfUnderline = TRUE;
+        versionFont = CreateFontIndirect(&lf);
+        SendMessage(hWnd, WM_SETFONT, WPARAM(versionFont), TRUE);
+    }
+
+    switch (uMsg) {
+        case WM_USER: return mouseOver;
+        case WM_LBUTTONUP: ShellExecute(hWnd, L"open", L"http://www.aimp.ru/forum/index.php?topic=49938", NULL, NULL, SW_SHOWNORMAL); break;
+        case WM_MOUSELEAVE:
+            mouseOver = false; 
+            InvalidateRect(hWnd, NULL, FALSE);
+            mouseTracking = false;
+        break;
+        case WM_MOUSEMOVE:
+            mouseOver = true;
+            InvalidateRect(hWnd, NULL, FALSE);
+            if (!mouseTracking) {
+                TRACKMOUSEEVENT tme;
+                tme.cbSize = sizeof(TRACKMOUSEEVENT);
+                tme.dwFlags = TME_LEAVE;
+                tme.hwndTrack = hWnd;
+
+                if (_TrackMouseEvent(&tme)) {
+                    mouseTracking = true;
+                }
+            }
+        break;
+        case WM_SETCURSOR:
+            SetCursor(LoadCursor(NULL, IDC_HAND));
+            return TRUE;
+        case WM_NCDESTROY:
+            RemoveWindowSubclass(hWnd, LinkProc, uIdSubclass);
+        break;
     }
     return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
@@ -547,6 +587,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             SetWindowSubclass(GetDlgItem(hwnd, IDC_GENERALGROUPBOX), GroupBoxProc, 0, /*OptionsDialog*/lParam);
             SetWindowSubclass(GetDlgItem(hwnd, IDC_MONITORGROUPBOX), GroupBoxProc, 0, /*OptionsDialog*/lParam);
             SetWindowSubclass(GetDlgItem(hwnd, IDC_AVATAR), AvatarProc, 0, /*OptionsDialog*/lParam);
+            SetWindowSubclass(GetDlgItem(hwnd, IDC_VERSION), LinkProc, 0, /*OptionsDialog*/lParam);
 
             SendDlgItemMessage(hwnd, IDC_LIMITSTREAMVALUESPIN, UDM_SETRANGE32, 1, 50000);
             SendDlgItemMessage(hwnd, IDC_CHECKEVERYVALUESPIN, UDM_SETRANGE32, 1, 720);
@@ -564,15 +605,24 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             HWND group = GetDlgItem(hwnd, IDC_AUTHGROUPBOX);    GetClientRect(group, &rc2); SetWindowPos(group, NULL, 0, 0, rc.right - 21, rc2.bottom, SWP_NOMOVE | SWP_NOZORDER);
                  group = GetDlgItem(hwnd, IDC_GENERALGROUPBOX); GetClientRect(group, &rc2); SetWindowPos(group, NULL, 0, 0, rc.right - 21, rc2.bottom, SWP_NOMOVE | SWP_NOZORDER);
                  group = GetDlgItem(hwnd, IDC_MONITORGROUPBOX); GetClientRect(group, &rc2); SetWindowPos(group, NULL, 0, 0, rc.right - 21, rc2.bottom, SWP_NOMOVE | SWP_NOZORDER);
+            HWND version = GetDlgItem(hwnd, IDC_VERSION);
+            GetClientRect(version, &rc2);
+            SetWindowPos(version, NULL, rc.right - 124, rc.bottom - rc2.bottom - 7, 120, rc2.bottom, SWP_NOZORDER);
             return TRUE;
         } break;
         case WM_CTLCOLORSTATIC: {
             DWORD CtrlID = GetDlgCtrlID((HWND)lParam);
             HDC hdcStatic = (HDC)wParam;
-            if (CtrlID == IDC_USERINFO)  {
+            if (CtrlID == IDC_VERSION) {
+                if (SendMessage((HWND)lParam, WM_USER, 0, 0) == 1) {
+                    SetTextColor(hdcStatic, RGB(0x34, 0x9b, 0xce));
+                } else {
+                    SetTextColor(hdcStatic, RGB(0xef, 0x68, 0x00));
+                }
+            } else if (CtrlID == IDC_USERINFO) {
                 SetTextColor(hdcStatic, RGB(0x80, 0x80, 0x80));
             } else {
-                SetTextColor(hdcStatic, RGB(0, 0, 0));
+                SetTextColor(hdcStatic, RGB(0x00, 0x00, 0x00));
             }
             SetBkMode(hdcStatic, TRANSPARENT);
             return (INT_PTR)bgBrush;

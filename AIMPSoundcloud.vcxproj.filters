@@ -122,12 +122,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Resources\btn-connect-m.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Resources\btn-disconnect-m.png">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="Resources\icon.png">
       <Filter>Resource Files</Filter>
     </Image>
