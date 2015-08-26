@@ -61,14 +61,14 @@ void SoundCloudAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value 
                 stream_url = L"https://api.soundcloud.com/tracks/" + std::to_wstring(trackId) + L"/stream";
 
             stream_url += L"?client_id=" TEXT(STREAM_CLIENT_ID);
-            file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_FILENAME, new AIMPString(stream_url));
+            file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_FILENAME, AIMPString(stream_url));
 
             if (!state->ReferenceName.empty()) {
-                file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_ALBUM, new AIMPString(state->ReferenceName));
+                file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_ALBUM, AIMPString(state->ReferenceName));
             }
 
-            file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_ARTIST, new AIMPString(Tools::ToWString(item["user"]["username"])));
-            std::wstring title(Tools::ToWString(item["title"]));
+            file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_ARTIST, AIMPString(item["user"]["username"]));
+            AIMPString title(item["title"]);
             if (Config::GetInt32(L"AddDurationToTitle", 0)) {
                 double duration = item["duration"].GetInt64() / 1000.0;
                 wchar_t buf[128];
@@ -78,12 +78,12 @@ void SoundCloudAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value 
                 } else {
                     swprintf_s(buf, L" (%d:%02d)", (uint32_t)floor(fmod(duration, 3600.0) / 60.0), (uint32_t)floor(fmod(duration, 60.0)));
                 }
-                title += buf;
+                title->Add2(buf, wcslen(buf));
             }
-            file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_TITLE, new AIMPString(title));
-            file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_URL, new AIMPString(Tools::ToWString(item["permalink_url"])));
+            file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_TITLE, title);
+            file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_URL, AIMPString(item["permalink_url"]));
             if (item.HasMember("genre"))
-                file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_GENRE, new AIMPString(Tools::ToWString(item["genre"])));
+                file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_GENRE, AIMPString(item["genre"]));
 
             file_info->SetValueAsFloat(AIMP_FILEINFO_PROPID_DURATION, item["duration"].GetInt64() / 1000.0);
 
@@ -98,7 +98,7 @@ void SoundCloudAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value 
                 }
             }
 
-            DebugA("Adding %s\n ", item["title"].GetString());
+            DebugA("Adding %s\n", item["title"].GetString());
         };
 
         if (d.IsArray()) {

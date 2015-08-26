@@ -22,14 +22,14 @@ IAIMPMenuItem *AimpMenu::Add(const std::wstring &name, CallbackFunc action, UINT
     IAIMPMenuItem *newItem = nullptr;
     if (SUCCEEDED(m_core->CreateObject(IID_IAIMPMenuItem, reinterpret_cast<void **>(&newItem)))) {
         newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_PARENT, m_menuItem);
-        newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_ID, new AIMPString(L"AIMPSoundcloud" + name));
+        newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_ID, AIMPString(L"AIMPSoundcloud" + name));
 
         if (action) {
             IAIMPAction *newAction = nullptr;
             if (SUCCEEDED(m_core->CreateObject(IID_IAIMPAction, reinterpret_cast<void **>(&newAction)))) {
-                newAction->SetValueAsObject(AIMP_ACTION_PROPID_ID, new AIMPString(L"AIMPSoundcloudAction" + name));
-                newAction->SetValueAsObject(AIMP_ACTION_PROPID_GROUPNAME, new AIMPString(L"SoundCloud"));
-                newAction->SetValueAsObject(AIMP_ACTION_PROPID_NAME, new AIMPString(name));
+                newAction->SetValueAsObject(AIMP_ACTION_PROPID_ID, AIMPString(L"AIMPSoundcloudAction" + name));
+                newAction->SetValueAsObject(AIMP_ACTION_PROPID_GROUPNAME, AIMPString(L"SoundCloud"));
+                newAction->SetValueAsObject(AIMP_ACTION_PROPID_NAME, AIMPString(name));
                 newAction->SetValueAsObject(AIMP_ACTION_PROPID_EVENT, new ClickHandler(action, newItem));
                 newAction->SetValueAsInt32(AIMP_ACTION_PROPID_ENABLED, true);
 
@@ -39,8 +39,8 @@ IAIMPMenuItem *AimpMenu::Add(const std::wstring &name, CallbackFunc action, UINT
                 newAction->Release();
             }
         } else {
-            newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_ID, new AIMPString(L"AIMPSoundcloud" + name));
-            newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, new AIMPString(name));
+            newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_ID, AIMPString(L"AIMPSoundcloud" + name));
+            newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, AIMPString(name));
             newItem->SetValueAsInt32(AIMP_MENUITEM_PROPID_ENABLED, true);
         }
 

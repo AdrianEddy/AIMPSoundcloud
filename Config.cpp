@@ -32,24 +32,24 @@ void Config::Deinit() {
 }
 
 void Config::Delete(const std::wstring &name) {
-    m_config->Delete(new AIMPString(L"Soundcloud\\" + name));
+    m_config->Delete(AIMPString(L"Soundcloud\\" + name));
 }
 
 void Config::SetString(const std::wstring &name, const std::wstring &value) {
-    m_config->SetValueAsString(new AIMPString(L"Soundcloud\\" + name), new AIMPString(value));
+    m_config->SetValueAsString(AIMPString(L"Soundcloud\\" + name), AIMPString(value));
 }
 
 void Config::SetInt64(const std::wstring &name, const int64_t &value) {
-    m_config->SetValueAsInt64(new AIMPString(L"Soundcloud\\" + name), value);
+    m_config->SetValueAsInt64(AIMPString(L"Soundcloud\\" + name), value);
 }
 
 void Config::SetInt32(const std::wstring &name, const int32_t &value) {
-    m_config->SetValueAsInt32(new AIMPString(L"Soundcloud\\" + name), value);
+    m_config->SetValueAsInt32(AIMPString(L"Soundcloud\\" + name), value);
 }
 
 std::wstring Config::GetString(const std::wstring &name, const std::wstring &def) {
     IAIMPString *str = nullptr;
-    if (SUCCEEDED(m_config->GetValueAsString(new AIMPString(L"Soundcloud\\" + name), &str)) && str) {
+    if (SUCCEEDED(m_config->GetValueAsString(AIMPString(L"Soundcloud\\" + name), &str)) && str) {
         std::wstring result = str->GetData();
         str->Release();
         return result;
@@ -59,7 +59,7 @@ std::wstring Config::GetString(const std::wstring &name, const std::wstring &def
 
 int64_t Config::GetInt64(const std::wstring &name, const int64_t &def) {
     int64_t val = 0;
-    if (SUCCEEDED(m_config->GetValueAsInt64(new AIMPString(L"Soundcloud\\" + name), &val))) {
+    if (SUCCEEDED(m_config->GetValueAsInt64(AIMPString(L"Soundcloud\\" + name), &val))) {
         return val;
     }
     return def;
@@ -67,7 +67,7 @@ int64_t Config::GetInt64(const std::wstring &name, const int64_t &def) {
 
 int32_t Config::GetInt32(const std::wstring &name, const int32_t &def) {
     int32_t val = 0;
-    if (SUCCEEDED(m_config->GetValueAsInt32(new AIMPString(L"Soundcloud\\" + name), &val))) {
+    if (SUCCEEDED(m_config->GetValueAsInt32(AIMPString(L"Soundcloud\\" + name), &val))) {
         return val;
     }
     return def;

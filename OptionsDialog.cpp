@@ -34,7 +34,9 @@ void OptionsDialog::OptionsModified() {
 }
 
 HRESULT WINAPI OptionsDialog::GetName(IAIMPString **S) {
-    *S = new AIMPString(L"SoundCloud");
+    static AIMPString name(L"SoundCloud");
+    name->AddRef();
+    *S = name;
     return S_OK;
 }
 
@@ -45,6 +47,8 @@ HWND WINAPI OptionsDialog::CreateFrame(HWND ParentWnd) {
         GetWindowRect(ParentWnd, &R);
         OffsetRect(&R, -R.left, -R.top);
         SetWindowPos(m_handle, NULL, R.left, R.top, R.right - R.left, R.bottom - R.top, SWP_SHOWWINDOW);
+        Notification(AIMP_SERVICE_OPTIONSDIALOG_NOTIFICATION_LOCALIZATION);
+        Notification(AIMP_SERVICE_OPTIONSDIALOG_NOTIFICATION_LOAD);
     }
     return m_handle;
 }

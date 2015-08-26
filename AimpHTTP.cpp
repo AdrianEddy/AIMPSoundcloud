@@ -21,7 +21,6 @@ void WINAPI AimpHTTP::EventListener::OnAccept(IAIMPString *ContentType, const IN
 }
 
 void WINAPI AimpHTTP::EventListener::OnComplete(IAIMPErrorInfo *ErrorInfo, BOOL Canceled) {
-    // TODO: Error checking
     if (m_stream) {
         if (m_isFileStream) {
             m_stream->Release();
@@ -49,28 +48,28 @@ void WINAPI AimpHTTP::EventListener::OnProgress(const INT64 Downloaded, const IN
 bool AimpHTTP::Get(const std::wstring &url, CallbackFunc callback) {
     EventListener *listener = new EventListener(callback);
     m_core->CreateObject(IID_IAIMPMemoryStream, reinterpret_cast<void **>(&(listener->m_stream)));
-    return SUCCEEDED(m_httpClient->Get(new AIMPString(url), 0, listener->m_stream, listener, 0, nullptr));
+    return SUCCEEDED(m_httpClient->Get(AIMPString(url), 0, listener->m_stream, listener, 0, nullptr));
 }
 
 bool AimpHTTP::Download(const std::wstring &url, const std::wstring &destination, CallbackFunc callback) {
     EventListener *listener = new EventListener(callback, true);
     IAIMPServiceFileStreaming *fileStreaming = nullptr;
     if (SUCCEEDED(m_core->QueryInterface(IID_IAIMPServiceFileStreaming, reinterpret_cast<void **>(&fileStreaming)))) {
-        fileStreaming->CreateStreamForFile(new AIMPString(destination), AIMP_SERVICE_FILESTREAMING_FLAG_CREATENEW, -1, -1, &(listener->m_stream));
+        fileStreaming->CreateStreamForFile(AIMPString(destination), AIMP_SERVICE_FILESTREAMING_FLAG_CREATENEW, -1, -1, &(listener->m_stream));
         fileStreaming->Release();
     }
     
-    return SUCCEEDED(m_httpClient->Get(new AIMPString(url), 0, listener->m_stream, listener, 0, nullptr));
+    return SUCCEEDED(m_httpClient->Get(AIMPString(url), 0, listener->m_stream, listener, 0, nullptr));
 }
 
 bool AimpHTTP::Post(const std::wstring &url, const std::string &body, CallbackFunc callback) {
     IAIMPStream *postData = nullptr;
     if (SUCCEEDED(m_core->CreateObject(IID_IAIMPMemoryStream, reinterpret_cast<void **>(&postData)))) {
-        postData->Write((unsigned char *)(body.c_str()), body.size() + 1, nullptr);
+        postData->Write((unsigned char *)(body.data()), body.size(), nullptr);
 
         EventListener *listener = new EventListener(callback);
         m_core->CreateObject(IID_IAIMPMemoryStream, reinterpret_cast<void **>(&(listener->m_stream)));
-        bool ok = SUCCEEDED(m_httpClient->Post(new AIMPString(url), 0, listener->m_stream, postData, listener, 0, nullptr));
+        bool ok = SUCCEEDED(m_httpClient->Post(AIMPString(url), 0, listener->m_stream, postData, listener, 0, nullptr));
 
         postData->Release();
         return ok;

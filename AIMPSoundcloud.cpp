@@ -25,6 +25,7 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
         return E_FAIL;
 
     m_core = Core;
+    AIMPString::Init(Core);
 
     if (FAILED(m_core->QueryInterface(IID_IAIMPServiceMUI, reinterpret_cast<void **>(&m_muiService))))
         return E_FAIL;
@@ -162,11 +163,11 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
             item->SetValueAsInt32(AIMP_MENUITEM_PROPID_VISIBLE, true);
 
             if (unlikes == 0) {
-                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, new AIMPString(Lang(L"SoundCloud.Menu\\LikeUnlike", 1))); // Like
+                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, AIMPString(Lang(L"SoundCloud.Menu\\LikeUnlike", 1))); // Like
             } else if (likes == 0) {
-                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, new AIMPString(Lang(L"SoundCloud.Menu\\LikeUnlike", 2))); // Unlike
+                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, AIMPString(Lang(L"SoundCloud.Menu\\LikeUnlike", 2))); // Unlike
             } else {
-                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, new AIMPString(Lang(L"SoundCloud.Menu\\LikeUnlike", 0))); // Like / Unlike
+                item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, AIMPString(Lang(L"SoundCloud.Menu\\LikeUnlike", 0))); // Like / Unlike
             }
         })->Release();
         delete contextMenu;
@@ -287,7 +288,7 @@ HRESULT WINAPI Plugin::Finalize() {
 
 IAIMPPlaylist *Plugin::GetPlaylistById(const std::wstring &playlistId, bool activate) {
     IAIMPPlaylist *playlistPointer = nullptr;
-    if (SUCCEEDED(m_playlistManager->GetLoadedPlaylistByID(new AIMPString(playlistId), &playlistPointer)) && playlistPointer) {
+    if (SUCCEEDED(m_playlistManager->GetLoadedPlaylistByID(AIMPString(playlistId), &playlistPointer)) && playlistPointer) {
         if (activate)
             m_playlistManager->SetActivePlaylist(playlistPointer);
 
@@ -300,13 +301,13 @@ IAIMPPlaylist *Plugin::GetPlaylistById(const std::wstring &playlistId, bool acti
 
 IAIMPPlaylist *Plugin::GetPlaylist(const std::wstring &playlistName, bool activate, bool create) {
     IAIMPPlaylist *playlistPointer = nullptr;
-    if (SUCCEEDED(m_playlistManager->GetLoadedPlaylistByName(new AIMPString(playlistName), &playlistPointer)) && playlistPointer) {
+    if (SUCCEEDED(m_playlistManager->GetLoadedPlaylistByName(AIMPString(playlistName), &playlistPointer)) && playlistPointer) {
         if (activate)
             m_playlistManager->SetActivePlaylist(playlistPointer);
 
         return UpdatePlaylistGrouping(playlistPointer);
     } else if (create) {
-        if (SUCCEEDED(m_playlistManager->CreatePlaylist(new AIMPString(playlistName), activate, &playlistPointer)))
+        if (SUCCEEDED(m_playlistManager->CreatePlaylist(AIMPString(playlistName), activate, &playlistPointer)))
             return UpdatePlaylistGrouping(playlistPointer);
     }
 
@@ -329,7 +330,7 @@ IAIMPPlaylist *Plugin::UpdatePlaylistGrouping(IAIMPPlaylist *pl) {
     IAIMPPropertyList *plProp = nullptr;
     if (SUCCEEDED(pl->QueryInterface(IID_IAIMPPropertyList, reinterpret_cast<void **>(&plProp)))) {
         plProp->SetValueAsInt32(AIMP_PLAYLIST_PROPID_GROUPPING_OVERRIDEN, 1);
-        plProp->SetValueAsObject(AIMP_PLAYLIST_PROPID_GROUPPING_TEMPLATE, new AIMPString(L"%A"));
+        plProp->SetValueAsObject(AIMP_PLAYLIST_PROPID_GROUPPING_TEMPLATE, AIMPString(L"%A"));
         plProp->Release();
     }
     return pl;
@@ -475,12 +476,12 @@ std::wstring Plugin::Lang(const std::wstring &key, int part) {
 
     IAIMPString *value = nullptr;
     if (part > -1) {
-        if (SUCCEEDED(m_muiService->GetValuePart(new AIMPString(key), part, &value))) {
+        if (SUCCEEDED(m_muiService->GetValuePart(AIMPString(key), part, &value))) {
             ret = value->GetData();
             value->Release();
         }
     } else {
-        if (SUCCEEDED(m_muiService->GetValue(new AIMPString(key), &value))) {
+        if (SUCCEEDED(m_muiService->GetValue(AIMPString(key), &value))) {
             ret = value->GetData();
             value->Release();
         }
