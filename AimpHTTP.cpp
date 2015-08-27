@@ -17,6 +17,8 @@ AimpHTTP::EventListener::EventListener(CallbackFunc callback, bool isFile) : m_i
 }
 
 void WINAPI AimpHTTP::EventListener::OnAccept(IAIMPString *ContentType, const INT64 ContentSize, BOOL *Allow) {
+    ContentType->AddRef();
+    ContentType->Release();
     *Allow = true;
 }
 
