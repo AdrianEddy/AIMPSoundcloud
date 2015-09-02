@@ -10,14 +10,13 @@ extern HINSTANCE g_hInst;
 void AddURLDialog::Show() {
     HWND parent = Plugin::instance()->GetMainWindowHandle();
 
-    HWND hwnd = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_ADDURL), parent, DlgProc);
-    SendMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(hwnd, IDC_SOUNDCLOUDURL), 1L);
+    DialogBox(g_hInst, MAKEINTRESOURCE(IDD_ADDURL), parent, DlgProc);
 }
 
 BOOL CALLBACK AddURLDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
     switch (Msg) {
         case WM_CLOSE:
-            DestroyWindow(hwnd);
+            EndDialog(hwnd, IDCANCEL);
         break;
         case WM_INITDIALOG: {
             SendDlgItemMessage(hwnd, IDC_CREATENEW, BM_SETCHECK, BST_CHECKED, NULL);
@@ -32,6 +31,7 @@ BOOL CALLBACK AddURLDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
             SetDlgItemText(hwnd, IDC_CREATENEW,            Plugin::instance()->Lang(L"SoundCloud.AddURL\\CreateNew").c_str());
             SetDlgItemText(hwnd, IDOK,                     Plugin::instance()->Lang(L"SoundCloud.AddURL\\OK").c_str());
             SetDlgItemText(hwnd, IDC_PLAYLISTTITLECAPTION, Plugin::instance()->Lang(L"SoundCloud.AddURL\\PlaylistName").c_str());
+            SetFocus(GetDlgItem(hwnd, IDC_SOUNDCLOUDURL));
         } break;
         case WM_COMMAND: {
             switch (LOWORD(wParam)) {
@@ -48,8 +48,11 @@ BOOL CALLBACK AddURLDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
                     if (!url.empty()) {
                         SoundCloudAPI::ResolveUrl(url, playlistTitle, createnew);
                     }
-                    DestroyWindow(hwnd);
+                    EndDialog(hwnd, wParam);
                 } break;
+                case IDCANCEL:
+                    EndDialog(hwnd, wParam);
+                break;
                 case IDC_CREATENEW:
                     if (HIWORD(wParam) == BN_CLICKED) {
                         LRESULT chkState = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0);
