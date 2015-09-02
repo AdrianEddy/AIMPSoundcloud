@@ -398,6 +398,7 @@ void SoundCloudAPI::LikeSong(int64_t trackId) {
            L"&oauth_token=" + Plugin::instance()->getAccessToken();
 
     AimpHTTP::Put(url);
+    Config::Likes.insert(trackId);
 }
 
 void SoundCloudAPI::UnlikeSong(int64_t trackId) {
@@ -407,6 +408,7 @@ void SoundCloudAPI::UnlikeSong(int64_t trackId) {
            L"&oauth_token=" + Plugin::instance()->getAccessToken();
 
     AimpHTTP::Delete(url);
+    Config::Likes.erase(trackId);
 
     if (IAIMPPlaylist *likes = Plugin::instance()->GetPlaylist(Plugin::instance()->Lang(L"SoundCloud\\Likes", 0), false, false)) {
         Plugin::instance()->ForEveryItem(likes, [&](IAIMPPlaylistItem *item, IAIMPFileInfo *info, int64_t id) -> int {

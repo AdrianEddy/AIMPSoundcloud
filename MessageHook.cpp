@@ -23,7 +23,10 @@ void WINAPI MessageHook::CoreMessage(DWORD AMessage, int AParam1, void *AParam2,
             url->Release();
             if (id > 0) {
                 DebugA("Unliking %ld\n", id);
-                SoundCloudAPI::UnlikeSong(id);
+                if (Config::Likes.find(id) != Config::Likes.end()) {
+                    SoundCloudAPI::UnlikeSong(id);
+                    Config::Likes.erase(id);
+                }
                 Config::TrackExclusions.insert(id);
                 Config::SaveExtendedConfig();
                 IAIMPPlaylist *parent = nullptr;

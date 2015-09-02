@@ -10,7 +10,8 @@ extern HINSTANCE g_hInst;
 void AddURLDialog::Show() {
     HWND parent = Plugin::instance()->GetMainWindowHandle();
 
-    CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_ADDURL), parent, DlgProc);
+    HWND hwnd = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_ADDURL), parent, DlgProc);
+    SendMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(hwnd, IDC_SOUNDCLOUDURL), 1L);
 }
 
 BOOL CALLBACK AddURLDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam) {

@@ -224,7 +224,7 @@ void Plugin::MonitorCallback() {
             m_instance->m_monitorPendingUrls.push(x);
         }
         if (m_instance->isConnected() && Config::GetInt32(L"MonitorLikes", 1)) {
-            if (IAIMPPlaylist *pl = m_instance->GetPlaylist(m_instance->Lang(L"SoundCloud\\Likes", 0), false)) {
+            if (IAIMPPlaylist *pl = m_instance->GetPlaylist(m_instance->Lang(L"SoundCloud\\Likes", 0), false, false)) {
                 std::wstring playlistId = m_instance->PlaylistId(pl);
                 pl->Release();
                 if (!playlistId.empty()) {
@@ -235,7 +235,7 @@ void Plugin::MonitorCallback() {
             }
         }
         if (m_instance->isConnected() && Config::GetInt32(L"MonitorStream", 1)) {
-            if (IAIMPPlaylist *pl = m_instance->GetPlaylist(m_instance->Lang(L"SoundCloud\\Stream", 0), false)) {
+            if (IAIMPPlaylist *pl = m_instance->GetPlaylist(m_instance->Lang(L"SoundCloud\\Stream", 0), false, false)) {
                 std::wstring playlistId = m_instance->PlaylistId(pl);
                 pl->Release();
                 if (!playlistId.empty()) {
