@@ -1,0 +1,47 @@
+[FILE]
+Author=R3gi
+Name=Czech (CS)
+VersionID=0
+LangId=1029
+
+[SoundCloud]
+ConnectStatusOK=Přístup povolen|Nyní můžete zavřít toto okno prohlížeče a přejít zpět do přehrávače AIMP.
+ConnectStatusError=Omlouváme se, došlo k chybě|Nelze navázat spojení s účtem služby SoundCloud. Přejděte zpět do přehrávače AIMP a zkuste to znovu.
+Likes=SoundCloud - Líbí se| – líbilo se
+Stream=SoundCloud - Stream| – stream
+Recommended=Doporučeno pro 
+Prefix=SoundCloud - 
+
+[SoundCloud.Messages]
+Error=Chyba
+CantResolve=URL adresu nelze rozpoznat.
+
+[SoundCloud.Menu]
+AddURL=SoundCloud URL adresa
+MyTracksAndPlaylists=Mé skladby a playlisty
+MyStream=SoundCloud stream
+MyLikes=SoundCloud hodnocení
+LoadRecommendations=Načíst doporučení|Zde|Vytvořit nový playlist
+OpenInBrowser=Otevřít ve webovém prohlížeči
+AddToExclusions=Přidat do výjimek
+LikeUnlike=Líbí/Nelíbí|To se mi líbí|Už se mi to nelíbí
+
+[SoundCloud.AddURL]
+Title=Přidat SoundCloud URL adresu
+URL=SoundCloud URL adresa
+CreateNew=Vytvořit nový playlist
+OK=OK
+PlaylistName=Název playlistu (volitelný)
+
+[SoundCloud.Options]
+Title=SoundCloud
+Account=SoundCloud účet
+ConnectButton=Připojit|Odpojit
+General=Obecné
+AddDurationToTitle=Přidat dobu trvání do názvu skladby
+LimitUserStream=Omezit počet položek ve streamu na|skladeb
+MonitorURLs=Hlídat přidané URL adresy
+MonitorLikes=Hlídat uživatelovo hodnocení
+MonitorStream=Hlídat uživatelův stream
+CheckAtStartup=Kontrolovat nové skladby při spuštění přehrávače AIMP
+CheckEvery=Kontrolovat nové skladby každých|hodin
