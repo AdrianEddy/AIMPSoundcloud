@@ -29,12 +29,24 @@ IAIMPMenuItem *AimpMenu::Add(const std::wstring &name, CallbackFunc action, UINT
             if (SUCCEEDED(m_core->CreateObject(IID_IAIMPAction, reinterpret_cast<void **>(&newAction)))) {
                 newAction->SetValueAsObject(AIMP_ACTION_PROPID_ID, AIMPString(L"AIMPSoundcloudAction" + name));
                 newAction->SetValueAsObject(AIMP_ACTION_PROPID_GROUPNAME, AIMPString(L"SoundCloud"));
-                newAction->SetValueAsObject(AIMP_ACTION_PROPID_NAME, AIMPString(name));
+                AIMPString actionName;
+                if (m_menuItem) {
+                    IAIMPString *parentName;
+                    if (SUCCEEDED(m_menuItem->GetValueAsObject(AIMP_MENUITEM_PROPID_NAME, IID_IAIMPString, reinterpret_cast<void **>(&parentName)))) {
+                        actionName->Add(parentName);
+                        parentName->Release();
+                        actionName->Add2(L" -> ", 4);
+                    }
+                }
+                actionName->Add(AIMPString(name));
+
+                newAction->SetValueAsObject(AIMP_ACTION_PROPID_NAME, actionName);
                 newAction->SetValueAsObject(AIMP_ACTION_PROPID_EVENT, new ClickHandler(action, newItem));
                 newAction->SetValueAsInt32(AIMP_ACTION_PROPID_ENABLED, true);
 
                 m_core->RegisterExtension(IID_IAIMPServiceActionManager, newAction);
                 newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_ACTION, newAction);
+                newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, AIMPString(name));
 
                 newAction->Release();
             }

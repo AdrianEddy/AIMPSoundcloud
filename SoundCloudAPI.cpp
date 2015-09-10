@@ -334,7 +334,10 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
             if (monitor) {
                 toMonitor.insert(finalUrl);
                 for (const auto &x : toMonitor) {
-                    Config::MonitorUrls.push_back({ x, playlistId, state->Flags, plName });
+                    auto find = [&](const Config::MonitorUrl &p) -> bool { return p.PlaylistID == playlistId && p.URL == x; };
+                    if (std::find_if(Config::MonitorUrls.begin(), Config::MonitorUrls.end(), find) == Config::MonitorUrls.end()) {
+                        Config::MonitorUrls.push_back({ x, playlistId, state->Flags, plName });
+                    }
                 }
                 Config::SaveExtendedConfig();
             }

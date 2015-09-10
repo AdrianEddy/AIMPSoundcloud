@@ -24,6 +24,13 @@ public:
         m_timers.erase(taskId);
     }
 
+    static void StopAll() {
+        for (auto &x : m_timers) {
+            KillTimer(NULL, x.first);
+        }
+        m_timers.clear();
+    }
+
 private:
     static void CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime) {
         if (uMsg == WM_TIMER) {

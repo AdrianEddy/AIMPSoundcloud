@@ -272,7 +272,7 @@ void Plugin::MonitorCallback() {
 }
 
 HRESULT WINAPI Plugin::Finalize() {
-    Timer::Cancel(m_monitorTimer);
+    Timer::StopAll();
     m_messageDispatcher->Unhook(m_messageHook);
     m_messageDispatcher->Release();
     m_muiService->Release();
