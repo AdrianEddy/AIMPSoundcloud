@@ -243,9 +243,12 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
     std::wstring finalUrl(L"https://api.soundcloud.com/resolve?url=" + Tools::UrlEncode(url));
     std::wstring refName2;
     if (url.find(L"soundcloud.com/explore") != std::wstring::npos) {
-        std::wstring cat(url.substr(url.find(L"explore/") + 8));
+        std::wstring cat(url.substr(url.find(L"explore") + 7));
         if (cat.empty()) 
             cat = L"Popular+Music";
+
+        if (*cat.begin() == L'/')
+            cat = cat.substr(1);
 
         refName2 = cat;
         Tools::ReplaceString(std::wstring(L"+"), std::wstring(L" "), refName2);
@@ -271,10 +274,10 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
             LoadingState *state = new LoadingState();
             std::set<std::wstring> toMonitor;
 
-            if (d.IsObject() && d.HasMember("collection")) {
+            if (d.IsObject() && !d.HasMember("kind") && d.HasMember("collection")) {
                 plName = refName2;
                 addDirectly = &(d["collection"]);
-            } else if (d.IsObject() && d.HasMember("tracks")) {
+            } else if (d.IsObject() && !d.HasMember("kind") && d.HasMember("tracks")) {
                 plName = refName2;
                 addDirectly = &(d["tracks"]);
             } else if (d.IsArray()) {
