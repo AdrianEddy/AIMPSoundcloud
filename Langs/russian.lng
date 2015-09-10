@@ -39,6 +39,7 @@ Account=SoundCloud аккаунт
 ConnectButton=авторизоваться|выйти
 General=Главное
 AddDurationToTitle=Добавить продолжительность трека в название
+AddUsernameToTitle=Add author username to track title
 LimitUserStream=Ограничение потоков|на пользователя
 MonitorURLs=Мониторинг добавленных URL-адресов
 MonitorLikes=Мониторинг любимого

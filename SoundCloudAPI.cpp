@@ -67,7 +67,10 @@ void SoundCloudAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value 
                 file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_ALBUM, AIMPString(state->ReferenceName));
             }
 
-            file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_ARTIST, AIMPString(item["user"]["username"]));
+            if (Config::GetInt32(L"AddUsernameToTitle", 0)) {
+                file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_ARTIST, AIMPString(item["user"]["username"]));
+            }
+
             AIMPString title(item["title"]);
             if (Config::GetInt32(L"AddDurationToTitle", 0)) {
                 double duration = item["duration"].GetInt64() / 1000.0;
@@ -237,11 +240,30 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
         return;
     }
 
-    AimpHTTP::Get(L"https://api.soundcloud.com/resolve?url=" + Tools::UrlEncode(url) + L"&client_id=" TEXT(CLIENT_ID) L"&oauth_token=" + Plugin::instance()->getAccessToken(), [createPlaylist, url, playlistTitle](unsigned char *data, int size) {
+    std::wstring finalUrl(L"https://api.soundcloud.com/resolve?url=" + Tools::UrlEncode(url));
+    std::wstring refName2;
+    if (url.find(L"soundcloud.com/explore") != std::wstring::npos) {
+        std::wstring cat(url.substr(url.find(L"explore/") + 8));
+        if (cat.empty()) 
+            cat = L"Popular+Music";
+
+        refName2 = cat;
+        Tools::ReplaceString(std::wstring(L"+"), std::wstring(L" "), refName2);
+        finalUrl = L"https://api-v2.soundcloud.com/explore/" + cat + L"?limit=200";
+    } else if (url.find(L"soundcloud.com/tags") != std::wstring::npos) {
+        std::wstring tag(url.substr(url.find(L"tags/") + 5));
+        if (!tag.empty()) {
+            refName2 = tag;
+            Tools::ReplaceString(std::wstring(L"%20"), std::wstring(L" "), refName2);
+            finalUrl = L"https://api.soundcloud.com/search/sounds?q=*&filter.genre_or_tag=" + tag + L"&limit=200";
+        }
+    }
+
+    AimpHTTP::Get(finalUrl + L"&client_id=" TEXT(CLIENT_ID) L"&oauth_token=" + Plugin::instance()->getAccessToken(), [createPlaylist, url, playlistTitle, refName2](unsigned char *data, int size) {
         rapidjson::Document d;
         d.Parse(reinterpret_cast<const char *>(data));
 
-        if ((d.IsObject() && d.HasMember("kind")) || d.IsArray()) {
+        if ((d.IsObject() && (d.HasMember("kind") || d.HasMember("tracks") || d.HasMember("collection"))) || d.IsArray()) {
             std::wstring finalUrl;
             rapidjson::Value *addDirectly = nullptr;
             std::wstring plName;
@@ -249,7 +271,13 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
             LoadingState *state = new LoadingState();
             std::set<std::wstring> toMonitor;
 
-            if (d.IsArray()) {
+            if (d.IsObject() && d.HasMember("collection")) {
+                plName = refName2;
+                addDirectly = &(d["collection"]);
+            } else if (d.IsObject() && d.HasMember("tracks")) {
+                plName = refName2;
+                addDirectly = &(d["tracks"]);
+            } else if (d.IsArray()) {
                 plName = url;
                 addDirectly = &d;
             } else {

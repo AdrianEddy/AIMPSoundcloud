@@ -39,6 +39,7 @@ Account=Konto SoundCloud
 ConnectButton=Zaloguj się|Wyloguj się
 General=Ogólne
 AddDurationToTitle=Dodaj czas trwania do tytułu utworu
+AddUsernameToTitle=Dodaj nazwę użytkownika do tytułu utworu
 LimitUserStream=Limituj tablicę użytkownika|utworów
 MonitorURLs=Monitoruj dodane adresy
 MonitorLikes=Monitoruj ulubione

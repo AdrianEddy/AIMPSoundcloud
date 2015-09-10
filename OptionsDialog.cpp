@@ -74,6 +74,7 @@ void WINAPI OptionsDialog::Notification(int ID) {
             SetDlgItemText(m_handle, IDC_AUTHGROUPBOX,    m_plugin->Lang(L"SoundCloud.Options\\Account").c_str());
             SetDlgItemText(m_handle, IDC_GENERALGROUPBOX, m_plugin->Lang(L"SoundCloud.Options\\General").c_str());
             SetDlgItemText(m_handle, IDC_ADDDURATION,     m_plugin->Lang(L"SoundCloud.Options\\AddDurationToTitle").c_str());
+            SetDlgItemText(m_handle, IDC_ADDARTIST,       m_plugin->Lang(L"SoundCloud.Options\\AddUsernameToTitle").c_str());
             SetDlgItemText(m_handle, IDC_LIMITSTREAM,     limitUserStreamText0.c_str());
             SetDlgItemText(m_handle, IDC_TRACKS,          limitUserStreamText1.c_str());
             SetDlgItemText(m_handle, IDC_MONITORGROUPBOX, m_plugin->Lang(L"SoundCloud.Options\\MonitorURLs").c_str());
@@ -124,6 +125,7 @@ void WINAPI OptionsDialog::Notification(int ID) {
             m_plugin->setAccessToken(Config::GetString(L"AccessToken"));
 
             SendDlgItemMessage(m_handle, IDC_ADDDURATION, BM_SETCHECK, Config::GetInt32(L"AddDurationToTitle", 0), 0);
+            SendDlgItemMessage(m_handle, IDC_ADDARTIST, BM_SETCHECK, Config::GetInt32(L"AddUsernameToTitle", 0), 0);
             SendDlgItemMessage(m_handle, IDC_LIMITSTREAM, BM_SETCHECK, Config::GetInt32(L"LimitUserStream", 1), 0);
             SendDlgItemMessage(m_handle, IDC_LIMITSTREAMVALUESPIN, UDM_SETPOS32, 0, Config::GetInt32(L"LimitUserStreamValue", 5000));
 
@@ -157,6 +159,7 @@ void WINAPI OptionsDialog::Notification(int ID) {
             Config::SetInt32(L"CheckEveryHours", SendDlgItemMessage(m_handle, IDC_CHECKEVERYVALUESPIN, UDM_GETPOS32, 0, 0));
 
             Config::SetInt32(L"AddDurationToTitle", SendDlgItemMessage(m_handle, IDC_ADDDURATION, BM_GETCHECK, 0, 0) == BST_CHECKED);
+            Config::SetInt32(L"AddUsernameToTitle", SendDlgItemMessage(m_handle, IDC_ADDARTIST, BM_GETCHECK, 0, 0) == BST_CHECKED);
             Config::SetInt32(L"LimitUserStream", SendDlgItemMessage(m_handle, IDC_LIMITSTREAM, BM_GETCHECK, 0, 0) == BST_CHECKED);
             Config::SetInt32(L"CheckEveryEnabled", SendDlgItemMessage(m_handle, IDC_CHECKEVERY, BM_GETCHECK, 0, 0) == BST_CHECKED);
             Config::SetInt32(L"CheckOnStartup", SendDlgItemMessage(m_handle, IDC_CHECKONSTARTUP, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -685,6 +688,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                 break;
                 case IDC_MONITORLIKES:
                 case IDC_MONITORSTREAM:
+                case IDC_ADDARTIST:
                 case IDC_ADDDURATION:
                 case IDC_CHECKONSTARTUP:
                 case IDC_CHECKEVERY:
@@ -762,13 +766,13 @@ void OptionsDialog::Connect(std::function<void()> onFinished) {
                 }
             });
 
-            Tools::ReplaceString("%TITLE%", s1, response);
-            Tools::ReplaceString("%TEXT%", s2, response);
+            Tools::ReplaceString(std::string("%TITLE%"), s1, response);
+            Tools::ReplaceString(std::string("%TEXT%"), s2, response);
             return true;
         }
 
-        Tools::ReplaceString("%TITLE%", s3, response);
-        Tools::ReplaceString("%TEXT%", s4, response);
+        Tools::ReplaceString(std::string("%TITLE%"), s3, response);
+        Tools::ReplaceString(std::string("%TEXT%"), s4, response);
         return true;
     }))->Start();
 
@@ -780,6 +784,7 @@ void OptionsDialog::Connect(std::function<void()> onFinished) {
 
 static std::vector<int> s_tabOrder({ IDC_CONNECTBTN,
                                      IDC_ADDDURATION,
+                                     IDC_ADDARTIST,
                                      IDC_LIMITSTREAM,
                                      IDC_LIMITSTREAMVALUE,
                                      IDC_MONITORLIKES,

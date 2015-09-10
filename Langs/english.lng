@@ -39,6 +39,7 @@ Account=SoundCloud account
 ConnectButton=Connect|Disconnect
 General=General
 AddDurationToTitle=Add duration to track title
+AddUsernameToTitle=Add author username to track title
 LimitUserStream=Limit user's stream items to|tracks
 MonitorURLs=Monitor added URLs
 MonitorLikes=Monitor user's likes

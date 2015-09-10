@@ -13,7 +13,14 @@ struct Tools {
     static std::wstring ToWString(const char *);
     static std::wstring ToWString(const rapidjson::Value &);
 
-    static void ReplaceString(const std::string &search, const std::string &replace, std::string &subject);
+    template<typename T>
+    static void ReplaceString(const T &search, const T &replace, T &subject) {
+        size_t pos = 0;
+        while ((pos = subject.find(search, pos)) != T::npos) {
+            subject.replace(pos, search.length(), replace);
+            pos += replace.length();
+        }
+    }
 
     static int64_t TrackIdFromUrl(const std::wstring &);
 

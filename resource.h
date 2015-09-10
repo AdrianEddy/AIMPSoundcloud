@@ -34,3 +34,4 @@
 #define IDC_TRACKS                              40014
 #define IDC_MONITORLIKES                        40015
 #define IDC_MONITORSTREAM                       40016
+#define IDC_ADDARTIST                           40017

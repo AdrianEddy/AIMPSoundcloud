@@ -69,11 +69,3 @@ int64_t Tools::TrackIdFromUrl(const std::wstring &url) {
     }
     return 0;
 }
-
-void Tools::ReplaceString(const std::string &search, const std::string &replace, std::string &subject) {
-    size_t pos = 0;
-    while ((pos = subject.find(search, pos)) != std::string::npos) {
-        subject.replace(pos, search.length(), replace);
-        pos += replace.length();
-    }
-}
