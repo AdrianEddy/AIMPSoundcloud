@@ -1,0 +1,48 @@
+﻿[FILE]
+Author=Fix
+Name=Eesti (EE)
+VersionID=0
+LangId=1061
+
+[SoundCloud]
+ConnectStatusOK=Autoriseerimine õnnestus|Võite nüüd sulgeda selle akna ja pöörududa tagasi AIMPi.
+ConnectStatusError=Vabandame, tekkis viga|Ei suutnud ühendada SoundCloud kasutajaga. Palun pöörduge tagasi AIMPi ja proovige uuesti.
+Likes=SoundCloud - Meeldimised|meeldimised
+Stream=SoundCloud - Voog|voog
+Recommended=On soovitatud
+Prefix=SoundCloud - 
+
+[SoundCloud.Messages]
+Error=Viga
+CantResolve=Ei suutnud avada seda linki.
+
+[SoundCloud.Menu]
+AddURL=SoundCloud link
+MyTracksAndPlaylists=Minu lood ja mänguloendid
+MyStream=SoundCloud voog
+MyLikes=SoundCloud meeldimised
+LoadRecommendations=Lae soovitused|Siin|Loo uus mänguloend
+OpenInBrowser=Ava veebilehitsejas
+AddToExclusions=Lisa eranditesse
+LikeUnlike=Meeldib / Ei meeldi|Meeldib|Ei meeldi
+
+[SoundCloud.AddURL]
+Title=Lisa SoundCloud link
+URL=SoundCloud link
+CreateNew=Loo uus mänguloend
+OK=Ok
+PlaylistName=Mänguloendi nimi (valikuline)
+
+[SoundCloud.Options]
+Title=SoundCloud
+Account=SoundCloud kasutaja
+ConnectButton=Ühenda|Katkesta
+General=Üldine
+AddDurationToTitle=Lisa kestvus loo nimesse
+AddUsernameToTitle=Lisa autori kasutajanimi loo nimesse
+LimitUserStream=Limiteeri kasutaja voogus kirjete arvu|looni
+MonitorURLs=Jälgi lisatud linke
+MonitorLikes=Jälgi kasutaja meeldimisi
+MonitorStream=Jälgi kasutaja voogu
+CheckAtStartup=Kontrolli uute lugude olemasolu AIMPi käivitamisel
+CheckEvery=Kontrolli uute lugude olemasolu iga|tunni järel
