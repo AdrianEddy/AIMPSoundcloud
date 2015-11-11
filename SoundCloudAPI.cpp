@@ -164,10 +164,11 @@ void SoundCloudAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, Loadi
         }
 
         if (processNextPage) {
-            LoadFromUrl(Tools::ToWString(d["next_href"]), playlist, state, finishCallback);
-        } else if (state->Flags & LoadingState::LoadingLikes && d.IsArray() && d.Size() > 0) {
+            state->CleanURL = Tools::ToWString(d["next_href"]);
+            LoadFromUrl(state->CleanURL, playlist, state, finishCallback);
+        } else if (((state->Flags & LoadingState::LoadingLikes) || (state->Flags & LoadingState::LoadAllPages)) && d.IsArray() && d.Size() > 0) {
             state->Offset += 200;
-            LoadFromUrl(L"https://api.soundcloud.com/me/favorites?limit=200&offset=" + std::to_wstring(state->Offset), playlist, state, finishCallback);
+            LoadFromUrl(state->CleanURL + L"&offset=" + std::to_wstring(state->Offset), playlist, state, finishCallback);
         } else if (!state->PendingUrls.empty()) {
             const LoadingState::PendingUrl &pl = state->PendingUrls.front();
             if (!pl.Title.empty()) {
@@ -175,9 +176,9 @@ void SoundCloudAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, Loadi
             }
             if (pl.PlaylistPosition > -3) { // -3 = don't change
                 state->InsertPos = pl.PlaylistPosition;
-                state->Flags = LoadingState::UpdateAdditionalPos | LoadingState::IgnoreExistingPosition;
+                state->Flags |= LoadingState::UpdateAdditionalPos | LoadingState::IgnoreExistingPosition;
             }
-
+            state->CleanURL = pl.Url;
             LoadFromUrl(pl.Url, playlist, state, finishCallback);
             state->PendingUrls.pop();
         } else {
@@ -203,8 +204,8 @@ void SoundCloudAPI::LoadLikes() {
     state->Flags = LoadingState::LoadingLikes;
     state->ReferenceName = Config::GetString(L"UserName") + Plugin::instance()->Lang(L"SoundCloud\\Likes", 1);
     GetExistingTrackIds(pl, state);
-
-    LoadFromUrl(L"https://api.soundcloud.com/me/favorites?limit=200", pl, state);
+    state->CleanURL = L"https://api.soundcloud.com/me/favorites?limit=200";
+    LoadFromUrl(state->CleanURL, pl, state);
 }
 
 void SoundCloudAPI::LoadStream() {
@@ -217,8 +218,8 @@ void SoundCloudAPI::LoadStream() {
     state->ReferenceName = Config::GetString(L"UserName") + Plugin::instance()->Lang(L"SoundCloud\\Stream", 1);
     state->Flags = LoadingState::IgnoreExistingPosition;
     GetExistingTrackIds(pl, state);
-
-    LoadFromUrl(L"https://api.soundcloud.com/me/activities?limit=300", pl, state);
+    state->CleanURL = L"https://api.soundcloud.com/me/activities?limit=300";
+    LoadFromUrl(state->CleanURL, pl, state);
 }
 
 void SoundCloudAPI::GetExistingTrackIds(IAIMPPlaylist *pl, LoadingState *state) {
@@ -288,13 +289,14 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
                     plName = Plugin::instance()->Lang(L"SoundCloud\\Prefix") + Tools::ToWString(d["username"]);
 
                     std::wstring base = L"https://api.soundcloud.com/users/" + std::to_wstring(d["id"].GetInt64());
-                    finalUrl = base + L"/playlists";
-                    std::wstring secondUrl = base + L"/tracks";
+                    finalUrl = base + L"/playlists?limit=200";
+                    std::wstring secondUrl = base + L"/tracks?limit=200";
                     toMonitor.insert(secondUrl);
 
                     state->PendingUrls.push({ std::wstring(), secondUrl, 0 });
+                    state->Offset = 0;
 
-                    state->Flags = LoadingState::IgnoreExistingPosition;
+                    state->Flags = LoadingState::IgnoreExistingPosition | LoadingState::LoadAllPages;
                 } else if (strcmp(d["kind"].GetString(), "track") == 0) {
                     if (url.find(L"/recommended") != std::wstring::npos) {
                         plName = Plugin::instance()->Lang(L"SoundCloud\\Recommended") + Tools::ToWString(d["title"]);
@@ -359,6 +361,7 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
                 AddFromJson(pl, *addDirectly, state);
                 delete state;
             } else {
+                state->CleanURL = finalUrl;
                 LoadFromUrl(finalUrl, pl, state);
             }
 
@@ -482,6 +485,6 @@ void SoundCloudAPI::LoadRecommendations(int64_t trackId, bool createPlaylist, IA
         state->InsertPos = plIndex + 1;
     }
     GetExistingTrackIds(pl, state);
-
-    LoadFromUrl(L"https://api.soundcloud.com/tracks/" + std::to_wstring(trackId) + L"/related", pl, state);
+    state->CleanURL = L"https://api.soundcloud.com/tracks/" + std::to_wstring(trackId) + L"/related";
+    LoadFromUrl(state->CleanURL, pl, state);
 }

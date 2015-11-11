@@ -22,11 +22,13 @@ public:
             UpdateAdditionalPos    = 0x01,
             LoadingLikes           = 0x02,
             IgnoreExistingPosition = 0x04,
-            IgnoreNextPage         = 0x08
+            IgnoreNextPage         = 0x08,
+            LoadAllPages           = 0x10
         };
         std::unordered_set<int64_t> TrackIds;
         std::queue<PendingUrl> PendingUrls;
         std::wstring ReferenceName;
+        std::wstring CleanURL;
         int AdditionalPos;
         int InsertPos;
         int Offset;
