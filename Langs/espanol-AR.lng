@@ -1,0 +1,48 @@
+﻿[FILE]
+Author=KNTRO (kntro@msn.com)
+Name=Español (Argentina) [es-AR]
+VersionID=0
+LangId=11274
+
+[SoundCloud]
+ConnectStatusOK=Autorización aceptada|Podés cerrar esta pestaña del navegador web y volver a AIMP.
+ConnectStatusError=Lo sentimos, ocurrió un error|No se pudo conectar a la cuenta de SoundCloud. Por favor, volvé a AIMP e intentá de nuevo.
+Likes=SoundCloud - Audios favoritos|Los audio favoritos de 
+Stream=SoundCloud - Stream|Stream de 
+Recommended=Recomendado para 
+Prefix=SoundCloud - 
+
+[SoundCloud.Messages]
+Error=Error
+CantResolve=No se pudo resolver esta dirección web.
+
+[SoundCloud.Menu]
+AddURL=Dirección web de SoundCloud
+MyTracksAndPlaylists=Mis temas y listas de reproducción
+MyStream=Stream de SoundCloud
+MyLikes=Temas favoritos de SoundCloud
+LoadRecommendations=Cargar recomendaciones|Acá|Crear nueva lista de reproducción
+OpenInBrowser=Abrir en navegador web
+AddToExclusions=Agregar a exclusiones
+LikeUnlike=Agregar a temas favoritos / Quitar de temas favoritos|Agregar|Quitar
+
+[SoundCloud.AddURL]
+Title=Agregar dirección web de SoundCloud
+URL=Dirección web de SoundCloud
+CreateNew=Crear nueva lista de reproducción
+OK=Aceptar
+PlaylistName=Nombre de la lista de reproducción (opcional)
+
+[SoundCloud.Options]
+Title=SoundCloud
+Account=Cuenta de SoundCloud
+ConnectButton=Conectar|Desconectar
+General=General
+AddDurationToTitle=Agregar duración al título del tema
+AddUsernameToTitle=Agregar nombre de usuario del autor al título del tema
+LimitUserStream=Limitar elementos de stream del usuario a|temas
+MonitorURLs=Monitorear direcciones web agregadas
+MonitorLikes=Monitorear los temas favoritos del usuario
+MonitorStream=Monitorear el streaming del usuario
+CheckAtStartup=Buscar nuevos temas al inicio de AIMP
+CheckEvery=Buscar nuevos temas cada|horas
