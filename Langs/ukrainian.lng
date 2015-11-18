@@ -1,11 +1,11 @@
 ﻿[FILE]
-Author=Банах Олександр
-Name=Українська (UA)
+Author=Банах Олександр, Олександр (6c6c6)
+Name=Українська (UK)
 VersionID=0
 LangId=1058
 
 [SoundCloud]
-ConnectStatusOK=Авторизацію успішно пройдено|Тепер можна закрити вікно веб-переглядача та повернутись до AIMP.
+ConnectStatusOK=Дозвіл надано|Тепер Ви можете закрити це вікно браузера та повернутись до AIMP.
 ConnectStatusError=Нажаль, сталася помилка|Не вдалося під'єднатися до облікового запису SoundCloud. Будь ласка поверніться до AIMP і спробуйте ще раз.
 Likes=SoundCloud - Вподобання| - Вподобання
 Stream=SoundCloud - Потік| - Потік
@@ -14,23 +14,23 @@ Prefix=SoundCloud -
 
 [SoundCloud.Messages]
 Error=Помилка
-CantResolve=Не вдалося розв'язати цю адресу.
+CantResolve=Неможливо обробити це посилання.
 
 [SoundCloud.Menu]
-AddURL=SoundCloud URL
+AddURL=SoundCloud-посилання
 MyTracksAndPlaylists=Мої треки та списки відтворення
 MyStream=Мій потік
 MyLikes=Мої вподобання
 LoadRecommendations=Завантажити рекомендації|Сюди|Створити новий список відтворення
-OpenInBrowser=Відкрити у веб-переглядачі
+OpenInBrowser=Відкрити у браузері
 AddToExclusions=Додати до списку виключень
 LikeUnlike=Подобається / Не подобається|Подобається|Не подобається
 
 [SoundCloud.AddURL]
-Title=Додати SoundCloud URL
-URL=SoundCloud URL
+Title=Додати SoundCloud-посилання
+URL=SoundCloud-посилання
 CreateNew=Створити новий список відтворення
-OK=OK
+OK=Гаразд
 PlaylistName=Назва списку відтворення (опціонально)
 
 [SoundCloud.Options]
@@ -41,7 +41,7 @@ General=Основні налаштування
 AddDurationToTitle=Додавати тривалість треку до назви
 AddUsernameToTitle=Додавати ім'я користувача до назви треку
 LimitUserStream=Обмежити кількість треків в потоці до| на користувача
-MonitorURLs=Моніторинг доданих URL-адрес
+MonitorURLs=Моніторити додавання посилань
 MonitorLikes=Моніторити вподобання
 MonitorStream=Моніторити потік
 CheckAtStartup=Перевіряти наявність нових треків під час запуску AIMP
