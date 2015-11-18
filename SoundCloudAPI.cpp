@@ -142,7 +142,9 @@ void SoundCloudAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, Loadi
     } else {
         url += L'&';
     }
-    url += L"client_id=" TEXT(CLIENT_ID) L"&oauth_token=" + Plugin::instance()->getAccessToken();
+    url += L"client_id=" TEXT(CLIENT_ID);
+    if (Plugin::instance()->isConnected())
+        url += L"&oauth_token=" + Plugin::instance()->getAccessToken();
 
     AimpHTTP::Get(url, [playlist, state, finishCallback](unsigned char *data, int size) {
         rapidjson::Document d;
@@ -262,8 +264,10 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
             finalUrl = L"https://api.soundcloud.com/search/sounds?q=*&filter.genre_or_tag=" + tag + L"&limit=200";
         }
     }
+    if (Plugin::instance()->isConnected())
+        finalUrl += L"&oauth_token=" + Plugin::instance()->getAccessToken();
 
-    AimpHTTP::Get(finalUrl + L"&client_id=" TEXT(CLIENT_ID) L"&oauth_token=" + Plugin::instance()->getAccessToken(), [createPlaylist, url, playlistTitle, refName2](unsigned char *data, int size) {
+    AimpHTTP::Get(finalUrl + L"&client_id=" TEXT(CLIENT_ID), [createPlaylist, url, playlistTitle, refName2](unsigned char *data, int size) {
         rapidjson::Document d;
         d.Parse(reinterpret_cast<const char *>(data));
 
