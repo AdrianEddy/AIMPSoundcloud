@@ -17,6 +17,7 @@ Error=Error
 CantResolve=No se pudo resolver esta dirección web.
 
 [SoundCloud.Menu]
+Repost=Repost
 AddURL=Dirección web de SoundCloud
 MyTracksAndPlaylists=Mis temas y listas de reproducción
 MyStream=Stream de SoundCloud

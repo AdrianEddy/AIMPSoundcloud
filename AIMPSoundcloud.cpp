@@ -127,6 +127,15 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
             Config::SaveExtendedConfig();
         }, IDB_ICON, enableIfValid)->Release();
 
+        contextMenu->Add(Lang(L"SoundCloud.Menu\\Repost"), [this](IAIMPMenuItem *) {
+            ForSelectedTracks([](IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t id) -> int {
+                if (id > 0) {
+                    SoundCloudAPI::RepostSong(id);
+                }
+                return 0;
+            });
+        }, IDB_ICON, enableIfValid)->Release();
+
         contextMenu->Add(Lang(L"SoundCloud.Menu\\LikeUnlike", 0), [this](IAIMPMenuItem *) {
             ForSelectedTracks([](IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t id) -> int {
                 if (id > 0) {
@@ -172,6 +181,7 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
                 item->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, AIMPString(Lang(L"SoundCloud.Menu\\LikeUnlike", 0))); // Like / Unlike
             }
         })->Release();
+
         delete contextMenu;
     }
 

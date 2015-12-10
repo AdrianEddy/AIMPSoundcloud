@@ -46,6 +46,7 @@ public:
 
     static void LikeSong(int64_t trackId);
     static void UnlikeSong(int64_t trackId);
+    static void RepostSong(int64_t trackId);
     static void LoadRecommendations(int64_t trackId, bool createPlaylist, IAIMPPlaylistItem *item = nullptr);
     static void GetExistingTrackIds(IAIMPPlaylist *pl, LoadingState *state);
 

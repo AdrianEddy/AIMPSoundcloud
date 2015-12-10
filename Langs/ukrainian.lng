@@ -17,6 +17,7 @@ Error=Помилка
 CantResolve=Неможливо обробити це посилання.
 
 [SoundCloud.Menu]
+Repost=Repost
 AddURL=SoundCloud-посилання
 MyTracksAndPlaylists=Мої треки та списки відтворення
 MyStream=Мій потік

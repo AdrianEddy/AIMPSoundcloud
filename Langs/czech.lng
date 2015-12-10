@@ -17,6 +17,7 @@ Error=Chyba
 CantResolve=URL adresu nelze rozpoznat.
 
 [SoundCloud.Menu]
+Repost=Repost
 AddURL=SoundCloud URL adresa
 MyTracksAndPlaylists=Mé skladby a playlisty
 MyStream=SoundCloud stream

@@ -22,7 +22,7 @@ void WINAPI MessageHook::CoreMessage(DWORD AMessage, int AParam1, void *AParam2,
             int64_t id = Tools::TrackIdFromUrl(url->GetData());
             url->Release();
             if (id > 0) {
-                DebugA("Unliking %ld\n", id);
+                DebugA("Unliking %lld\n", id);
                 if (Config::Likes.find(id) != Config::Likes.end()) {
                     SoundCloudAPI::UnlikeSong(id);
                     Config::Likes.erase(id);

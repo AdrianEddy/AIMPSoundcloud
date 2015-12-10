@@ -17,6 +17,7 @@ Error=Viga
 CantResolve=Ei suutnud avada seda linki.
 
 [SoundCloud.Menu]
+Repost=Repost
 AddURL=SoundCloud link
 MyTracksAndPlaylists=Minu lood ja mänguloendid
 MyStream=SoundCloud voog

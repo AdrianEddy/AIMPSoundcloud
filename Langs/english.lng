@@ -17,6 +17,7 @@ Error=Error
 CantResolve=Could not resolve this url.
 
 [SoundCloud.Menu]
+Repost=Repost
 AddURL=SoundCloud URL
 MyTracksAndPlaylists=My tracks and playlists
 MyStream=SoundCloud stream

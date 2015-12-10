@@ -17,6 +17,7 @@ Error=Błąd
 CantResolve=Nie udało się wczytać tego adresu.
 
 [SoundCloud.Menu]
+Repost=Repostuj
 AddURL=SoundCloud URL
 MyTracksAndPlaylists=Moje utwory i playlisty
 MyStream=SoundCloud - tablica

@@ -431,7 +431,6 @@ void SoundCloudAPI::LoadMyTracksAndPlaylists() {
     AimpHTTP::Get(L"https://api.soundcloud.com/me/playlists?oauth_token=" + Plugin::instance()->getAccessToken(), processResponse);
 }
 
-
 void SoundCloudAPI::LikeSong(int64_t trackId) {
     std::wstring url(L"https://api.soundcloud.com/me/favorites/");
     url += std::to_wstring(trackId);
@@ -461,6 +460,20 @@ void SoundCloudAPI::UnlikeSong(int64_t trackId) {
         likes->Release();
     }
 }
+
+// Not officially supported. May break in the future
+void SoundCloudAPI::RepostSong(int64_t trackId) {
+    if (!Plugin::instance()->isConnected())
+        return;
+
+    std::wstring url(L"https://api.soundcloud.com/e1/me/track_reposts/");
+    url += std::to_wstring(trackId);
+    url += L"?client_id=" TEXT(CLIENT_ID)
+           L"&oauth_token=" + Plugin::instance()->getAccessToken();
+
+    AimpHTTP::Put(url);
+}
+
 
 void SoundCloudAPI::LoadRecommendations(int64_t trackId, bool createPlaylist, IAIMPPlaylistItem *item) {
     IAIMPString *name = nullptr;

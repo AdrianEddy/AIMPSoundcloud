@@ -17,6 +17,7 @@ Error=Ошибка
 CantResolve=Не удалось разрешить этот адрес.
 
 [SoundCloud.Menu]
+Repost=Repost
 AddURL=SoundCloud URL
 MyTracksAndPlaylists=Мои треки и плейлисты
 MyStream=SoundCloud мои потоки
