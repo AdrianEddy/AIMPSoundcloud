@@ -1,0 +1,49 @@
+﻿[FILE]
+Author=paradonym
+Name=Deutsch (DE)
+VersionID=0
+LangId=1031
+
+[SoundCloud]
+ConnectStatusOK=Zugriff erteilt|Du kannst dieses Browserfenster nun schließen und zu AIMP zurückkehren.
+ConnectStatusError=Entschuldigung, ein Fehler|Konnte nicht mit SoundCloud Account verbinden. Bitte gehe zurück zu AIMP und versuche es erneut.
+Likes=SoundCloud - Likes|'s likes
+Stream=SoundCloud - Stream|'s stream
+Recommended=Voschläge für
+Prefix=SoundCloud - 
+
+[SoundCloud.Messages]
+Error=Fehler
+CantResolve=Kann diese URL nicht auflösen.
+
+[SoundCloud.Menu]
+Repost=Repost
+AddURL=SoundCloud URL
+MyTracksAndPlaylists=Meine Tracks und Playlists
+MyStream=SoundCloud stream
+MyLikes=SoundCloud likes
+LoadRecommendations=Vorschläge laden|Hier|Neue Playlist erstellen
+OpenInBrowser=Öffne in Webbrowser
+AddToExclusions=zu Ausnahmen hinzufügen
+LikeUnlike=Like / Unlike|Like|Unlike
+
+[SoundCloud.AddURL]
+Title=Add SoundCloud URL
+URL=SoundCloud URL
+CreateNew=Neue Playlist erstellen
+OK=OK
+PlaylistName=Playlist-Name (optional)
+
+[SoundCloud.Options]
+Title=SoundCloud
+Account=SoundCloud Account
+ConnectButton=Verbinden|Trennen
+General=Generell
+AddDurationToTitle=Füge Dauer zu Track-Datei hinzu
+AddUsernameToTitle=Füge Author-Name zu Track-Titel hinzu
+LimitUserStream=Limitiere User-Stream-Einträge auf|tracks
+MonitorURLs=Überwache hinzugefügte URLs
+MonitorLikes=Überwache Nutzer-likes
+MonitorStream=Überwache Nutzer-stream
+CheckAtStartup=Überprüfe auf neue Tracks bei Starten von AIMP
+CheckEvery=Überprüfe auf neue Tracks alle|hours
