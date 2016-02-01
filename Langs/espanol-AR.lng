@@ -17,13 +17,13 @@ Error=Error
 CantResolve=No se pudo resolver esta dirección web.
 
 [SoundCloud.Menu]
-Repost=Repost
+Repost=Republicar
 AddURL=Dirección web de SoundCloud
 MyTracksAndPlaylists=Mis temas y listas de reproducción
 MyStream=Stream de SoundCloud
 MyLikes=Temas favoritos de SoundCloud
 LoadRecommendations=Cargar recomendaciones|Acá|Crear nueva lista de reproducción
-OpenInBrowser=Abrir en navegador web
+OpenInBrowser=Abrir en el navegador web
 AddToExclusions=Agregar a exclusiones
 LikeUnlike=Agregar a temas favoritos / Quitar de temas favoritos|Agregar|Quitar
 

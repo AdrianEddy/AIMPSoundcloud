@@ -1,0 +1,52 @@
+﻿[FILE]
+Author=Peter Mulder (peter.mulder.1981@gmail.com)
+Help=
+Icon=
+LangId=1043
+Name=Nederlands (NL)
+VersionID=0
+
+[SoundCloud]
+ConnectStatusError=Sorry, er is een fout opgetreden|Kon geen verbinding maken met SoundCloud-account. Keer a.u.b. terug naar AIMP en probeer het opnieuw.
+ConnectStatusOK=Authorisatie gelukt|Je kunt nu dit browservenster sluiten en terugkeren naar AIMP.
+Likes=SoundCloud - Likes|'s likes
+Prefix=SoundCloud - 
+Recommended=Aanbevolen voor 
+Stream=SoundCloud - Stream|'s stream
+
+[SoundCloud.AddURL]
+CreateNew=Nieuwe afspeellijst maken
+OK=Oke
+PlaylistName=Naam afspeellijst (optioneel)
+Title=SoundCloud-URL toevoegen
+URL=SoundCloud URL
+
+[SoundCloud.Menu]
+AddToExclusions=Aan uitzonderingen toevoegen
+AddURL=SoundCloud URL
+LikeUnlike=Like / Unlike|Like|Unlike
+LoadRecommendations=Aanbevelingen laden|Hier|Nieuwe afspeellijst maken
+MyLikes=SoundCloud likes
+MyStream=SoundCloud stream
+MyTracksAndPlaylists=Mijn nummers en afspeellijsten
+OpenInBrowser=In webbrowser openen
+Repost=Repost
+
+[SoundCloud.Messages]
+CantResolve=Kon deze URL niet oplossen.
+Error=Fout
+
+[SoundCloud.Options]
+Account=SoundCloud-account
+AddDurationToTitle=Duur aan titel van nummer toevoegen
+AddUsernameToTitle=Naam van auteur toevoegen aan titel van nummer
+CheckAtStartup=Bij opstarten van AIMP op nieuwe nummers controleren
+CheckEvery=Op nieuwe nummers controleren elke|uur
+ConnectButton=Verbinden|Loskoppelen
+General=Algemeen
+LimitUserStream=Streamitems van gebruiker beperken tot|nummers
+MonitorLikes=Like's van gebruiker controleren
+MonitorStream=Toegevoegde gebruikersstreams controleren
+MonitorURLs=Toegevoegde URL's controleren
+Title=SoundCloud
+
