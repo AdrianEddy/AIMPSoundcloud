@@ -7,21 +7,21 @@ LangId=1029
 [SoundCloud]
 ConnectStatusOK=Přístup povolen|Nyní můžete zavřít toto okno prohlížeče a přejít zpět do přehrávače AIMP.
 ConnectStatusError=Omlouváme se, došlo k chybě|Nelze navázat spojení s účtem služby SoundCloud. Přejděte zpět do přehrávače AIMP a zkuste to znovu.
-Likes=SoundCloud - Líbí se| – líbilo se
-Stream=SoundCloud - Stream| – stream
+Likes=SoundCloud – Líbí se| – Líbilo se
+Stream=SoundCloud – Stream| – Stream
 Recommended=Doporučeno pro 
-Prefix=SoundCloud - 
+Prefix=SoundCloud – 
 
 [SoundCloud.Messages]
 Error=Chyba
 CantResolve=URL adresu nelze rozpoznat.
 
 [SoundCloud.Menu]
-Repost=Repost
+Repost=Přesdílet
 AddURL=SoundCloud URL adresa
 MyTracksAndPlaylists=Mé skladby a playlisty
-MyStream=SoundCloud stream
-MyLikes=SoundCloud hodnocení
+MyStream=Stream
+MyLikes=Líbilo se
 LoadRecommendations=Načíst doporučení|Zde|Vytvořit nový playlist
 OpenInBrowser=Otevřít ve webovém prohlížeči
 AddToExclusions=Přidat do výjimek
