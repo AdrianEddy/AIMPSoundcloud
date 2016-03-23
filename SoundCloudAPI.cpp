@@ -142,7 +142,7 @@ void SoundCloudAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, Loadi
     } else {
         url += L'&';
     }
-    url += L"client_id=" TEXT(CLIENT_ID);
+    url += L"client_id=" TEXT(STREAM_CLIENT_ID);
     if (Plugin::instance()->isConnected())
         url += L"&oauth_token=" + Plugin::instance()->getAccessToken();
 
@@ -267,7 +267,7 @@ void SoundCloudAPI::ResolveUrl(const std::wstring &url, const std::wstring &play
     if (Plugin::instance()->isConnected())
         finalUrl += L"&oauth_token=" + Plugin::instance()->getAccessToken();
 
-    AimpHTTP::Get(finalUrl + L"&client_id=" TEXT(CLIENT_ID), [createPlaylist, url, playlistTitle, refName2](unsigned char *data, int size) {
+    AimpHTTP::Get(finalUrl + L"&client_id=" TEXT(STREAM_CLIENT_ID), [createPlaylist, url, playlistTitle, refName2](unsigned char *data, int size) {
         rapidjson::Document d;
         d.Parse(reinterpret_cast<const char *>(data));
 
@@ -473,7 +473,6 @@ void SoundCloudAPI::RepostSong(int64_t trackId) {
 
     AimpHTTP::Put(url);
 }
-
 
 void SoundCloudAPI::LoadRecommendations(int64_t trackId, bool createPlaylist, IAIMPPlaylistItem *item) {
     IAIMPString *name = nullptr;

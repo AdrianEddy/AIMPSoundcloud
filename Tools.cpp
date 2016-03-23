@@ -61,8 +61,8 @@ std::wstring Tools::UrlEncode(const std::wstring &url) {
 
 int64_t Tools::TrackIdFromUrl(const std::wstring &url) {
     std::wstring::size_type ptr, ptr_end;
-    if ((ptr = url.find(L"tracks/")) != std::wstring::npos) {
-        ptr += 7;
+    if ((ptr = url.find(L"soundcloud.com/tracks/")) != std::wstring::npos) {
+        ptr += 22;
         if ((ptr_end = url.find(L"/", ptr)) != std::wstring::npos) {
             return std::stoll(url.substr(ptr, ptr_end - ptr));
         }
