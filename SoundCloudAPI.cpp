@@ -113,6 +113,9 @@ void SoundCloudAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value 
                 if (px->HasMember("origin"))
                     px = &((*px)["origin"]);
 
+                if (!px->IsObject())
+                    continue;
+
                 // Playlists
                 if (px->HasMember("kind") && strcmp((*px)["kind"].GetString(), "playlist") == 0 && px->HasMember("tracks") && (*px)["tracks"].IsArray() && (*px)["tracks"].Size() > 0) {
                     std::wstring oldName = state->ReferenceName;
