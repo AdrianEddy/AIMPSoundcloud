@@ -1,0 +1,49 @@
+﻿[FILE]
+Author=Vinicius Monteiro (viniciusmonteiro94@gmail.com  )
+Name=Português (BR)
+VersionID=0
+LangId=1046
+
+[SoundCloud]
+ConnectStatusOK=Autorização concedida|Você pode fechar agora essa janela do navegador e voltar para o AIMP.
+ConnectStatusError=Desculpe, um erro foi encontrado|Não foi possível conectar a conta da SoundCloud. Por favor retorne para o AIMP e tente novamente.
+Likes=SoundCloud - Likes|'s likes
+Stream=SoundCloud - Stream|'s stream
+Recommended=Recomendado para
+Prefix=SoundCloud - 
+
+[SoundCloud.Messages]
+Error=Erro
+CantResolve=Não foi possível resolver esta url.
+
+[SoundCloud.Menu]
+Repost=Repost
+AddURL=SoundCloud URL
+MyTracksAndPlaylists=Minhas faixas e playlists
+MyStream=SoundCloud stream
+MyLikes=SoundCloud likes
+LoadRecommendations=Carrregar recommendações|Aqui|Criar nova playlist
+OpenInBrowser=Abrir no navegador
+AddToExclusions=Adicionar às exclusões
+LikeUnlike=Like / Unlike|Like|Unlike
+
+[SoundCloud.AddURL]
+Title=Adicionar SoundCloud URL
+URL=SoundCloud URL
+CreateNew=Criar nova playlist
+OK=OK
+PlaylistName=Nome da playlist (opcional)
+
+[SoundCloud.Options]
+Title=SoundCloud
+Account=Conta SoundCloud
+ConnectButton=Conectar|Desconectar
+General=General
+AddDurationToTitle=Adicionar a duração ao título da faixa
+AddUsernameToTitle=Adicionar o usuário do autor ao título da faixa
+LimitUserStream=Limitar a stream do usuário para|faixas
+MonitorURLs=Monitorar URLs adicionadas
+MonitorLikes=Monitorar likes de usuários
+MonitorStream=Monitorar stream de usuários
+CheckAtStartup=Verificar por novas faixas na inicialização do AIMP
+CheckEvery=Verificar por novas faixas a cada|horas
