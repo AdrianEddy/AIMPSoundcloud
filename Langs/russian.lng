@@ -6,10 +6,10 @@ LangId=1049
 
 [SoundCloud]
 ConnectStatusOK=Авторизация пройдена|Теперь можно закрыть это окно браузера и вернуться к AIMP.
-ConnectStatusError=К сожалению, произошла ошибка|Не удалось подключиться к учетной записи SoundCloud. Пожалуйста, вернитесь на AIMP и попробуйте еще раз.
+ConnectStatusError=К сожалению, произошла ошибка|Не удалось подключиться к учетной записи SoundCloud. Пожалуйста, вернитесь к AIMP и попробуйте еще раз.
 Likes=SoundCloud - Нравится|Нравится
-Stream=SoundCloud - Поток|Потоки
-Recommended=Рекоменовано 
+Stream=SoundCloud - Поток|Поток
+Recommended=Рекомендации 
 Prefix=SoundCloud - 
 
 [SoundCloud.Messages]
@@ -17,11 +17,11 @@ Error=Ошибка
 CantResolve=Не удалось разрешить этот адрес.
 
 [SoundCloud.Menu]
-Repost=Repost
+Repost=Поделиться
 AddURL=SoundCloud URL
 MyTracksAndPlaylists=Мои треки и плейлисты
 MyStream=SoundCloud мои потоки
-MyLikes=SoundCloud мое любимое
+MyLikes=SoundCloud моё любимое
 LoadRecommendations=Загрузка рекомендаций|Здесь|Создать новый плейлист
 OpenInBrowser=Открыть в веб-браузере
 AddToExclusions=Добавить в список исключений
@@ -38,14 +38,14 @@ PlaylistName=Название плейлиста (опционально)
 [SoundCloud.Options]
 Title=SoundCloud
 Account=SoundCloud аккаунт
-ConnectButton=авторизоваться|выйти
+ConnectButton=Войти|Выйти
 General=Главное
 AddDurationToTitle=Добавить продолжительность трека в название
 AddUsernameToTitle=Добавить имя пользователя в название трека
 LimitUserStream=Ограничение потоков|на пользователя
-MonitorURLs=Мониторинг добавленных URL-адресов
-MonitorLikes=Мониторинг любимого
-MonitorStream=Мониторинг потоков
+MonitorURLs=Отслеживание добавленных URL-адресов
+MonitorLikes=Отслеживание любимого
+MonitorStream=Отслеживание потоков
 CheckAtStartup=Проверка новых треков при запуске AIMP
 CheckEvery=Проверка новых треков через промежуток времени в часах:|
 
