@@ -10,6 +10,9 @@
 #include "SoundCloudAPI.h"
 #include "AimpMenu.h"
 #include "resource.h"
+#include "FileSystem.h"
+#include "ArtworkProvider.h"
+#include "PlayerHook.h"
 #include <set>
 
 HRESULT __declspec(dllexport) WINAPI AIMPPluginGetHeader(IAIMPPlugin **Header) {
@@ -98,23 +101,20 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
         })->Release();
         delete recommendations;
 
-        contextMenu->Add(Lang(L"SoundCloud.Menu\\OpenInBrowser"), [this](IAIMPMenuItem *) {
-            ForSelectedTracks([this](IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t id) -> int {
-                if (id > 0) {
-                    wchar_t url[256];
-                    wsprintf(url, L"https://api.soundcloud.com/tracks/%ld?client_id=" TEXT(CLIENT_ID) L"&oauth_token=", id);
-                    AimpHTTP::Get(url + m_accessToken, [this](unsigned char *data, int size) {
-                        rapidjson::Document d;
-                        d.Parse(reinterpret_cast<const char *>(data));
+        auto fs = new FileSystem(m_core);
+        if (FAILED(m_core->RegisterExtension(IID_IAIMPServiceFileSystems, static_cast<FileSystem::Base *>(fs)))) {
+            delete fs;
 
-                        if (d.IsObject() && d.HasMember("permalink_url")) {
-                            ShellExecuteA(GetMainWindowHandle(), "open", d["permalink_url"].GetString(), NULL, NULL, SW_SHOWNORMAL);
-                        }
-                    });
-                }
-                return 0;
-            });
-        }, IDB_ICON, enableIfValid)->Release();
+            contextMenu->Add(Lang(L"SoundCloud.Menu\\OpenInBrowser"), [this](IAIMPMenuItem *) {
+                ForSelectedTracks([this](IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t id) -> int {
+                    if (auto ti = Tools::TrackInfo(id)) {
+                        if (!ti->Permalink.empty())
+                            ShellExecute(GetMainWindowHandle(), L"open", ti->Permalink.c_str(), NULL, NULL, SW_SHOWNORMAL);
+                    }
+                    return 0;
+                });
+            }, IDB_ICON, enableIfValid)->Release();
+        }
 
         contextMenu->Add(Lang(L"SoundCloud.Menu\\AddToExclusions"), [this](IAIMPMenuItem *) {
             ForSelectedTracks([](IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t id) -> int {
@@ -185,6 +185,14 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
         delete contextMenu;
     }
 
+    if (AimpMenu *miscMenu = AimpMenu::Get(AIMP_MENUID_PLAYER_PLAYLIST_MISCELLANEOUS)) {
+        miscMenu->Add(Lang(L"SoundCloud.Menu\\CheckForNewItems"), [this](IAIMPMenuItem *) {
+            MonitorCallback();
+        }, IDB_ICON)->Release();
+
+        delete miscMenu;
+    }
+
     if (FAILED(m_core->QueryInterface(IID_IAIMPServicePlaylistManager, reinterpret_cast<void **>(&m_playlistManager)))) {
         Finalize();
         return E_FAIL;
@@ -208,6 +216,14 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
     }
     
     if (FAILED(m_core->RegisterExtension(IID_IAIMPServicePlaylistManager, new PlaylistListener()))) {
+        Finalize();
+        return E_FAIL;
+    }
+    if (FAILED(m_core->RegisterExtension(IID_IAIMPServicePlayer, new PlayerHook()))) {
+        Finalize();
+        return E_FAIL;
+    }
+    if (FAILED(m_core->RegisterExtension(IID_IAIMPServiceAlbumArt, new ArtworkProvider()))) {
         Finalize();
         return E_FAIL;
     }
@@ -278,9 +294,10 @@ void Plugin::MonitorCallback() {
             return;
         }
 
-        SoundCloudAPI::LoadingState *state = new SoundCloudAPI::LoadingState();
+        auto state = std::make_shared<SoundCloudAPI::LoadingState>();
         state->ReferenceName = url.GroupName;
         state->Flags = url.Flags;
+        state->CleanURL = url.URL;
 
         SoundCloudAPI::GetExistingTrackIds(pl, state);
         if (m_instance->m_monitorPendingUrls.size() > 1) {
@@ -294,21 +311,28 @@ void Plugin::MonitorCallback() {
 
 HRESULT WINAPI Plugin::Finalize() {
     Timer::StopAll();
+    
+    AimpMenu::Deinit();
+    AimpHTTP::Deinit();
+    Config::Deinit();
+
     if (m_messageDispatcher) {
         m_messageDispatcher->Unhook(m_messageHook);
         m_messageDispatcher->Release();
+        m_messageDispatcher = nullptr;
     }
-    if (m_muiService) 
+    if (m_muiService) {
         m_muiService->Release();
+        m_muiService = nullptr;
+    }
 
-    if (m_playlistManager)
+    if (m_playlistManager) {
         m_playlistManager->Release();
-
-    AimpMenu::Deinit();
-    AimpHTTP::Deinit();
-      Config::Deinit();
+        m_playlistManager = nullptr;
+    }
 
     Gdiplus::GdiplusShutdown(m_gdiplusToken);
+    m_finalized = true;
     return S_OK;
 }
 
@@ -346,6 +370,30 @@ IAIMPPlaylist *Plugin::GetCurrentPlaylist() {
         return pl;
     }
     return nullptr;
+}
+
+void Plugin::ForAllPlaylists(std::function<void(IAIMPPlaylist *, const std::wstring &)> cb) {
+    if (!cb)
+        return;
+
+    int count = m_playlistManager->GetLoadedPlaylistCount();
+    for (int i = 0; i < count; ++i) {
+        IAIMPPlaylist *pl = nullptr;
+        if (SUCCEEDED(m_playlistManager->GetLoadedPlaylist(i, &pl))) {
+            std::wstring name;
+            IAIMPPropertyList *plProp = nullptr;
+            if (SUCCEEDED(pl->QueryInterface(IID_IAIMPPropertyList, reinterpret_cast<void **>(&plProp)))) {
+                IAIMPString *id = nullptr;
+                if (SUCCEEDED(plProp->GetValueAsObject(AIMP_PLAYLIST_PROPID_NAME, IID_IAIMPString, reinterpret_cast<void **>(&id)))) {
+                    name = id->GetData();
+                    id->Release();
+                }
+                plProp->Release();
+            }
+
+            cb(pl, name);
+        }
+    }
 }
 
 IAIMPPlaylist *Plugin::UpdatePlaylistGrouping(IAIMPPlaylist *pl) {

@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <cstdint>
 #include <functional>
+#include <memory>
 
 class IAIMPPlaylist;
 class IAIMPPlaylistItem;
@@ -41,17 +42,17 @@ public:
     static void LoadStream();
     static void LoadMyTracksAndPlaylists();
 
-    static void LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, LoadingState *state, std::function<void()> finishCallback = std::function<void()>());
+    static void LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, std::shared_ptr<LoadingState> state, std::function<void()> finishCallback = std::function<void()>());
     static void ResolveUrl(const std::wstring &url, const std::wstring &playlistTitle = std::wstring(), bool createPlaylist = true);
 
     static void LikeSong(int64_t trackId);
     static void UnlikeSong(int64_t trackId);
     static void RepostSong(int64_t trackId);
     static void LoadRecommendations(int64_t trackId, bool createPlaylist, IAIMPPlaylistItem *item = nullptr);
-    static void GetExistingTrackIds(IAIMPPlaylist *pl, LoadingState *state);
+    static void GetExistingTrackIds(IAIMPPlaylist *pl, std::shared_ptr<LoadingState> state);
 
 private:
-    static void AddFromJson(IAIMPPlaylist *, const rapidjson::Value &, LoadingState *state);
+    static void AddFromJson(IAIMPPlaylist *, const rapidjson::Value &, std::shared_ptr<LoadingState> state);
 
     SoundCloudAPI();
     SoundCloudAPI(const SoundCloudAPI &);

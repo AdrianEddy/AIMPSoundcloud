@@ -1,8 +1,11 @@
 #include "Config.h"
 
 #include "AIMPString.h"
+#include "AIMPSoundcloud.h"
 #include <ShlObj.h>
 #include "SDK/apiCore.h"
+#include "AimpHTTP.h"
+#include "Tools.h"
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/prettywriter.h"
@@ -15,6 +18,7 @@ std::wstring Config::m_configFolder;
 std::unordered_set<int64_t> Config::TrackExclusions;
 std::unordered_set<int64_t> Config::Likes;
 std::vector<Config::MonitorUrl> Config::MonitorUrls;
+std::unordered_map<int64_t, Config::TrackInfo> Config::TrackInfos;
 
 bool Config::Init(IAIMPCore *core) {
     IAIMPString *str = nullptr;
@@ -109,6 +113,7 @@ void Config::SaveExtendedConfig() {
 
         fclose(file);
     }
+    SaveCache();
 }
 
 void Config::LoadExtendedConfig() {
@@ -155,4 +160,98 @@ void Config::LoadExtendedConfig() {
         }
         fclose(file);
     }
+    LoadCache();
+}
+
+void Config::SaveCache() {
+    std::wstring configFile = m_configFolder + L"Cache.json";
+    FILE *file = nullptr;
+    if (_wfopen_s(&file, configFile.c_str(), L"wb") == 0) {
+        using namespace rapidjson;
+        char writeBuffer[65536];
+
+        FileWriteStream stream(file, writeBuffer, sizeof(writeBuffer));
+        Writer<decltype(stream), UTF16<>> writer(stream);
+
+        writer.StartObject();
+        for (const auto &ti : TrackInfos) {
+            writer.String(std::to_wstring(ti.first).c_str());
+            writer << ti.second;
+        }
+        writer.EndObject();
+
+        fclose(file);
+    }
+}
+
+void Config::LoadCache() {
+    TrackInfos.clear();
+
+    std::wstring configFile = m_configFolder + L"Cache.json";
+    FILE *file = nullptr;
+    if (_wfopen_s(&file, configFile.c_str(), L"rb") == 0) {
+        using namespace rapidjson;
+        char buffer[65536];
+
+        FileReadStream stream(file, buffer, sizeof(buffer));
+        GenericDocument<UTF16<>> d;
+        d.ParseStream<0, UTF8<>, decltype(stream)>(stream);
+
+        if (d.IsObject()) {
+            for (auto x = d.MemberBegin(), e = d.MemberEnd(); x != e; x++) {
+                int64_t id = std::stoll((*x).name.GetString());
+                TrackInfos[id] = (*x).value;
+                TrackInfos[id].Id = id;
+            }
+        }
+        fclose(file);
+    }
+}
+
+bool Config::ResolveTrackInfo(int64_t id) {
+    std::wstring url(L"https://api.soundcloud.com/tracks/");
+    url += std::to_wstring(id);
+    url += L"/?client_id=" TEXT(STREAM_CLIENT_ID);
+
+    if (Plugin::instance()->isConnected())
+        url += L"&oauth_token=" + Plugin::instance()->getAccessToken();
+
+    bool result = false;
+    std::wstring title(L"Unknown"), permalink, waveform_id, artwork;
+    double duration = -1;
+    std::wstring stream_url(L"https://api.soundcloud.com/tracks/" + std::to_wstring(id) + L"/stream");
+
+    AimpHTTP::Get(url, [&](unsigned char *data, int size) {
+        rapidjson::Document d;
+        d.Parse(reinterpret_cast<const char *>(data));
+
+        if (d.IsObject() && d.HasMember("id")) {
+            int64_t trackId = d["id"].GetInt64();
+            
+            if (d.HasMember("stream_url"))
+                stream_url = Tools::ToWString(d["stream_url"]);
+
+            waveform_id = Tools::ToWString(d["waveform_url"]);
+            if (!waveform_id.empty()) {
+                std::wstring::size_type ptr, ptr_end;
+                if ((ptr = waveform_id.find(L".com/")) != std::wstring::npos) {
+                    ptr += 5;
+                    if ((ptr_end = waveform_id.find(L".", ptr)) != std::wstring::npos) {
+                        waveform_id = waveform_id.substr(ptr, ptr_end - ptr);
+                    }
+                }
+            }
+            title = Tools::ToWString(d["title"]);
+            permalink = Tools::ToWString(d["permalink_url"]);
+            artwork = Tools::ToWString(d["artwork_url"]);
+            duration = d["duration"].GetInt64() / 1000.0;
+            result = true;
+        }
+
+        Config::TrackInfos[id] = Config::TrackInfo(id, title, stream_url, permalink, waveform_id, artwork, duration);
+
+        Config::SaveCache();
+    }, true);
+
+    return result;
 }

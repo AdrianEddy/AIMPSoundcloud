@@ -6,6 +6,7 @@
 #include "Tools.h"
 #include "rapidjson/document.h"
 #include "AIMPSoundcloud.h"
+#include "ExclusionsDialog.h"
 #include <Shellapi.h>
 
 #include <Commctrl.h>
@@ -81,6 +82,7 @@ void WINAPI OptionsDialog::Notification(int ID) {
             SetDlgItemText(m_handle, IDC_MONITORLIKES,    m_plugin->Lang(L"SoundCloud.Options\\MonitorLikes").c_str());
             SetDlgItemText(m_handle, IDC_MONITORSTREAM,   m_plugin->Lang(L"SoundCloud.Options\\MonitorStream").c_str());
             SetDlgItemText(m_handle, IDC_CHECKONSTARTUP,  m_plugin->Lang(L"SoundCloud.Options\\CheckAtStartup").c_str());
+            SetDlgItemText(m_handle, IDC_MANAGEEXCLUSIONS,m_plugin->Lang(L"SoundCloud.Exclusions\\Header").c_str());
             SetDlgItemText(m_handle, IDC_CHECKEVERY,      checkEveryText0.c_str());
             SetDlgItemText(m_handle, IDC_HOURS,           checkEveryText1.c_str());
             SendDlgItemMessage(m_handle, IDC_CONNECTBTN, WM_UPDATELOCALE, 0, 0);
@@ -487,10 +489,12 @@ LRESULT CALLBACK OptionsDialog::GroupBoxProc(HWND hWnd, UINT uMsg, WPARAM wParam
             return TRUE;
         }
         case WM_DESTROY:
-            DeleteObject(bgBrush);
-            DeleteObject(penOuter);
-            DeleteObject(penInner);
-            DeleteObject(captionFont);
+            if (GetWindowLong(hWnd, GWL_ID) == IDC_AUTHGROUPBOX) {
+                DeleteObject(bgBrush);
+                DeleteObject(penOuter);
+                DeleteObject(penInner);
+                DeleteObject(captionFont);
+            }
         break;
         case WM_NCDESTROY:
             RemoveWindowSubclass(hWnd, GroupBoxProc, uIdSubclass);
@@ -561,7 +565,12 @@ LRESULT CALLBACK OptionsDialog::LinkProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
             SendMessage(hWnd, WM_SETFONT, WPARAM(versionFont), TRUE);
         } break;
         case WM_USER: return mouseOver;
-        case WM_LBUTTONUP: ShellExecute(hWnd, L"open", L"http://www.aimp.ru/forum/index.php?topic=49938", NULL, NULL, SW_SHOWNORMAL); break;
+        case WM_LBUTTONUP: 
+            switch (GetWindowLong(hWnd, GWL_ID)) {
+                case IDC_VERSION: ShellExecute(hWnd, L"open", L"http://www.aimp.ru/forum/index.php?topic=49938", NULL, NULL, SW_SHOWNORMAL); break;
+                case IDC_MANAGEEXCLUSIONS: ExclusionsDialog::Show(GetParent(GetParent(hWnd))); break;
+            }
+        break;
         case WM_MOUSELEAVE:
             mouseOver = false; 
             InvalidateRect(hWnd, NULL, FALSE);
@@ -585,7 +594,9 @@ LRESULT CALLBACK OptionsDialog::LinkProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
             SetCursor(LoadCursor(NULL, IDC_HAND));
             return TRUE;
         case WM_DESTROY:
-            DeleteObject(versionFont);
+            if (GetWindowLong(hWnd, GWL_ID) == IDC_VERSION) {
+                DeleteObject(versionFont);
+            }
         break;
         case WM_NCDESTROY:
             RemoveWindowSubclass(hWnd, LinkProc, uIdSubclass);
@@ -613,6 +624,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             SetWindowSubclass(GetDlgItem(hwnd, IDC_MONITORGROUPBOX), GroupBoxProc, 0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_MONITORGROUPBOX, WM_SUBCLASSINIT, 0, 0);
             SetWindowSubclass(GetDlgItem(hwnd, IDC_AVATAR),          AvatarProc,   0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_AVATAR, WM_SUBCLASSINIT, 0, 0);
             SetWindowSubclass(GetDlgItem(hwnd, IDC_VERSION),         LinkProc,     0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_VERSION, WM_SUBCLASSINIT, 0, 0);
+            SetWindowSubclass(GetDlgItem(hwnd, IDC_MANAGEEXCLUSIONS),LinkProc,     0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_MANAGEEXCLUSIONS, WM_SUBCLASSINIT, 0, 0);
 
             SendDlgItemMessage(hwnd, IDC_LIMITSTREAMVALUESPIN, UDM_SETRANGE32, 1, 50000);
             SendDlgItemMessage(hwnd, IDC_CHECKEVERYVALUESPIN, UDM_SETRANGE32, 1, 720);
@@ -633,12 +645,16 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             HWND version = GetDlgItem(hwnd, IDC_VERSION);
             GetClientRect(version, &rc2);
             SetWindowPos(version, NULL, rc.right - 124, rc.bottom - rc2.bottom - 7, 120, rc2.bottom, SWP_NOZORDER);
+
+            HWND manageLink = GetDlgItem(hwnd, IDC_MANAGEEXCLUSIONS);
+            GetClientRect(manageLink, &rc2);
+            SetWindowPos(manageLink, NULL, rc.left + 10, rc.bottom - rc2.bottom - 7, 120, rc2.bottom, SWP_NOZORDER);
             return TRUE;
         } break;
         case WM_CTLCOLORSTATIC: {
             DWORD CtrlID = GetDlgCtrlID((HWND)lParam);
             HDC hdcStatic = (HDC)wParam;
-            if (CtrlID == IDC_VERSION) {
+            if (CtrlID == IDC_VERSION || CtrlID == IDC_MANAGEEXCLUSIONS) {
                 if (SendMessage((HWND)lParam, WM_USER, 0, 0) == 1) {
                     SetTextColor(hdcStatic, RGB(0x34, 0x9b, 0xce));
                 } else {

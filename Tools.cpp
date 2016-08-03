@@ -67,5 +67,27 @@ int64_t Tools::TrackIdFromUrl(const std::wstring &url) {
             return std::stoll(url.substr(ptr, ptr_end - ptr));
         }
     }
+    if ((ptr = url.find(L"soundcloud://")) != std::wstring::npos) {
+        ptr += 13;
+        if ((ptr_end = url.find(L"/", ptr)) != std::wstring::npos) {
+            return std::stoll(url.substr(ptr, ptr_end - ptr));
+        } else {
+            return std::stoll(url.substr(ptr));
+        }
+    }
     return 0;
+}
+Config::TrackInfo *Tools::TrackInfo(int64_t id) {
+    if (id > 0) {
+        if (Config::TrackInfos.find(id) == Config::TrackInfos.end()) {
+            if (!Config::ResolveTrackInfo(id))
+                return nullptr;
+        }
+        return &Config::TrackInfos[id];
+    }
+    return nullptr;
+}
+
+Config::TrackInfo *Tools::TrackInfo(IAIMPString *FileName) {
+    return TrackInfo(Tools::TrackIdFromUrl(FileName->GetData()));
 }

@@ -15,12 +15,13 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>AIMPSoundcloud</RootNamespace>
     <ProjectName>AIMPSoundcloud</ProjectName>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -42,12 +43,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>C:\Program Files (x86)\AIMP3\Plugins\aimp_SoundCloud\</OutDir>
+    <OutDir>D:\AIMP4\Plugins\aimp_SoundCloud\</OutDir>
     <TargetName>aimp_SoundCloud</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>aimp_SoundCloud</TargetName>
+    <OutDir>$(SolutionDir)Release</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -62,6 +64,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>AIMPSoundcloud.def</ModuleDefinitionFile>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -82,6 +85,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>AIMPSoundcloud.def</ModuleDefinitionFile>
+      <AdditionalLibraryDirectories>D:\Programy\Microsoft Visual Studio 12.0\VC\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -90,11 +95,15 @@
     <ClInclude Include="AimpMenu.h" />
     <ClInclude Include="AIMPSoundcloud.h" />
     <ClInclude Include="AIMPString.h" />
+    <ClInclude Include="ArtworkProvider.h" />
+    <ClInclude Include="ExclusionsDialog.h" />
+    <ClInclude Include="FileSystem.h" />
     <ClInclude Include="GdiPlusImageLoader.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="IUnknownInterfaceImpl.h" />
     <ClInclude Include="MessageHook.h" />
     <ClInclude Include="OptionsDialog.h" />
+    <ClInclude Include="PlayerHook.h" />
     <ClInclude Include="PlaylistListener.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SoundCloudAPI.h" />
@@ -108,6 +117,7 @@
     <ClCompile Include="AimpMenu.cpp" />
     <ClCompile Include="AIMPSoundcloud.cpp" />
     <ClCompile Include="AIMPString.cpp" />
+    <ClCompile Include="ArtworkProvider.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
@@ -117,8 +127,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ExclusionsDialog.cpp" />
+    <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="MessageHook.cpp" />
     <ClCompile Include="OptionsDialog.cpp" />
+    <ClCompile Include="PlayerHook.cpp" />
     <ClCompile Include="PlaylistListener.cpp" />
     <ClCompile Include="SoundCloudAPI.cpp" />
     <ClCompile Include="TcpServer.cpp" />

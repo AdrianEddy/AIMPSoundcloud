@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cinttypes>
+#include "Config.h"
 #include "rapidjson/document.h"
 
 #define DebugA(...) { char msg[2048]; sprintf_s(msg, __VA_ARGS__); OutputDebugStringA(msg); }
@@ -23,6 +24,8 @@ struct Tools {
     }
 
     static int64_t TrackIdFromUrl(const std::wstring &);
+    static Config::TrackInfo *TrackInfo(int64_t id);
+    static Config::TrackInfo *TrackInfo(IAIMPString *FileName);
 
     static std::wstring UrlEncode(const std::wstring &);
     static void OutputLastError();

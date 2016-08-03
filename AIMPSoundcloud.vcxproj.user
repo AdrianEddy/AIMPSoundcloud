@@ -2,8 +2,14 @@
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommand>C:\Program Files (x86)\AIMP3\AIMP3.exe</LocalDebuggerCommand>
-    <LocalDebuggerWorkingDirectory>C:\Program Files (x86)\AIMP3\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerCommand>D:\AIMP4\AIMP.exe</LocalDebuggerCommand>
+    <LocalDebuggerWorkingDirectory>D:\AIMP4\</LocalDebuggerWorkingDirectory>
     <LocalDebuggerAttach>false</LocalDebuggerAttach>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommand>D:\AIMP4\AIMP.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerAttach>false</LocalDebuggerAttach>
+    <LocalDebuggerWorkingDirectory>D:\AIMP4\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
 </Project>

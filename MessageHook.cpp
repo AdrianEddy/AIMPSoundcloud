@@ -46,6 +46,22 @@ void WINAPI MessageHook::CoreMessage(DWORD AMessage, int AParam1, void *AParam2,
             }
         }
     }
+
+    if (AMessage == AIMP_MSG_CMD_PLS_DELETE_SELECTED) {
+        std::unordered_set<int64_t> deleted;
+        m_plugin->ForSelectedTracks([&deleted](IAIMPPlaylist *, IAIMPPlaylistItem *, int64_t id) -> int {
+            deleted.insert(id);
+            return 0;
+        });
+        
+        Config::MonitorUrls.erase(
+            std::remove_if(Config::MonitorUrls.begin(), Config::MonitorUrls.end(), [&](const Config::MonitorUrl &element) -> bool {
+            return deleted.find(Tools::TrackIdFromUrl(element.URL)) != deleted.end();
+        }), Config::MonitorUrls.end());
+
+        Config::SaveExtendedConfig();
+    }
+
     if (AMessage == AIMP_MSG_CMD_BOOKMARKS_ADD) {
         IAIMPString *url = nullptr;
         IAIMPPlaylistItem *currentTrack = m_plugin->GetCurrentTrack();
