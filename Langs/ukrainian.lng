@@ -26,6 +26,7 @@ LoadRecommendations=Завантажити рекомендації|Сюди|С�
 OpenInBrowser=Відкрити у браузері
 AddToExclusions=Додати до списку виключень
 LikeUnlike=Подобається / Не подобається|Подобається|Не подобається
+CheckForNewItems=Check for new tracks
 
 [SoundCloud.AddURL]
 Title=Додати SoundCloud-посилання
@@ -47,3 +48,11 @@ MonitorLikes=Моніторити вподобання
 MonitorStream=Моніторити потік
 CheckAtStartup=Перевіряти наявність нових треків під час запуску AIMP
 CheckEvery=Перевіряти наявність нових треків кожні| годин
+
+[SoundCloud.Exclusions]
+Title=Track exclusions
+Header=Manage track exclusions
+ListHeader=Track title|Duration
+Remove=Remove from exclusions
+RemoveAndAddToPlaylist=Remove from exclusions and add to playlist
+OK=OK

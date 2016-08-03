@@ -26,6 +26,7 @@ LoadRecommendations=Cargar recomendaciones|Acá|Crear nueva lista de reproducci�
 OpenInBrowser=Abrir en el navegador web
 AddToExclusions=Agregar a exclusiones
 LikeUnlike=Agregar a temas favoritos / Quitar de temas favoritos|Agregar|Quitar
+CheckForNewItems=Check for new tracks
 
 [SoundCloud.AddURL]
 Title=Agregar dirección web de SoundCloud
@@ -47,3 +48,11 @@ MonitorLikes=Monitorear los temas favoritos del usuario
 MonitorStream=Monitorear el streaming del usuario
 CheckAtStartup=Buscar nuevos temas al inicio de AIMP
 CheckEvery=Buscar nuevos temas cada|horas
+
+[SoundCloud.Exclusions]
+Title=Track exclusions
+Header=Manage track exclusions
+ListHeader=Track title|Duration
+Remove=Remove from exclusions
+RemoveAndAddToPlaylist=Remove from exclusions and add to playlist
+OK=OK

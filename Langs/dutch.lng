@@ -31,6 +31,7 @@ MyStream=SoundCloud stream
 MyTracksAndPlaylists=Mijn nummers en afspeellijsten
 OpenInBrowser=In webbrowser openen
 Repost=Repost
+CheckForNewItems=Check for new tracks
 
 [SoundCloud.Messages]
 CantResolve=Kon deze URL niet oplossen.
@@ -50,3 +51,10 @@ MonitorStream=Toegevoegde gebruikersstreams controleren
 MonitorURLs=Toegevoegde URL's controleren
 Title=SoundCloud
 
+[SoundCloud.Exclusions]
+Title=Track exclusions
+Header=Manage track exclusions
+ListHeader=Track title|Duration
+Remove=Remove from exclusions
+RemoveAndAddToPlaylist=Remove from exclusions and add to playlist
+OK=OK

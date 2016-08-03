@@ -26,6 +26,7 @@ LoadRecommendations=Načíst doporučení|Zde|Vytvořit nový playlist
 OpenInBrowser=Otevřít ve webovém prohlížeči
 AddToExclusions=Přidat do výjimek
 LikeUnlike=Líbí/Nelíbí|To se mi líbí|Už se mi to nelíbí
+CheckForNewItems=Check for new tracks
 
 [SoundCloud.AddURL]
 Title=Přidat SoundCloud URL adresu
@@ -47,3 +48,11 @@ MonitorLikes=Hlídat uživatelovo hodnocení
 MonitorStream=Hlídat uživatelův stream
 CheckAtStartup=Kontrolovat nové skladby při spuštění přehrávače AIMP
 CheckEvery=Kontrolovat nové skladby každých|hodin
+
+[SoundCloud.Exclusions]
+Title=Track exclusions
+Header=Manage track exclusions
+ListHeader=Track title|Duration
+Remove=Remove from exclusions
+RemoveAndAddToPlaylist=Remove from exclusions and add to playlist
+OK=OK

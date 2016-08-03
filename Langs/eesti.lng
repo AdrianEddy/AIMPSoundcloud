@@ -26,6 +26,7 @@ LoadRecommendations=Lae soovitused|Siin|Loo uus mänguloend
 OpenInBrowser=Ava veebilehitsejas
 AddToExclusions=Lisa eranditesse
 LikeUnlike=Meeldib / Ei meeldi|Meeldib|Ei meeldi
+CheckForNewItems=Check for new tracks
 
 [SoundCloud.AddURL]
 Title=Lisa SoundCloud link
@@ -47,3 +48,11 @@ MonitorLikes=Jälgi kasutaja meeldimisi
 MonitorStream=Jälgi kasutaja voogu
 CheckAtStartup=Kontrolli uute lugude olemasolu AIMPi käivitamisel
 CheckEvery=Kontrolli uute lugude olemasolu iga|tunni järel
+
+[SoundCloud.Exclusions]
+Title=Track exclusions
+Header=Manage track exclusions
+ListHeader=Track title|Duration
+Remove=Remove from exclusions
+RemoveAndAddToPlaylist=Remove from exclusions and add to playlist
+OK=OK
