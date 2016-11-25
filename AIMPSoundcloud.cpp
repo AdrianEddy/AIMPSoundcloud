@@ -63,7 +63,7 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
         }, IDB_ICON)->Release();
         playlistMenu->Add(Lang(L"SoundCloud.Menu\\MyLikes"), [this](IAIMPMenuItem *) {
             if (!isConnected()) {
-                OptionsDialog::Connect(SoundCloudAPI::LoadLikes);
+                OptionsDialog::Connect([] { SoundCloudAPI::LoadLikes(true); });
                 return;
             }
             SoundCloudAPI::LoadLikes();
@@ -149,7 +149,7 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
                 }
                 return 0;
             });
-            Timer::SingleShot(1000, SoundCloudAPI::LoadLikes);
+            Timer::SingleShot(1000, [] { SoundCloudAPI::LoadLikes(false); });
             Config::SaveExtendedConfig();
         }, IDB_ICON, [this](IAIMPMenuItem *item) {
             int likes = 0;

@@ -38,7 +38,7 @@ public:
         LoadingState() : AdditionalPos(0), InsertPos(0), Offset(0), AddedItems(0), Flags(None) {}
     };
 
-    static void LoadLikes();
+    static void LoadLikes(bool activate = true);
     static void LoadStream();
     static void LoadMyTracksAndPlaylists();
 

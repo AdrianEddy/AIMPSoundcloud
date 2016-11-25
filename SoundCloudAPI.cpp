@@ -216,11 +216,11 @@ void SoundCloudAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, std::
     });
 }
 
-void SoundCloudAPI::LoadLikes() {
+void SoundCloudAPI::LoadLikes(bool activate) {
     if (!Plugin::instance()->isConnected())
         return;
 
-    IAIMPPlaylist *pl = Plugin::instance()->GetPlaylist(Plugin::instance()->Lang(L"SoundCloud\\Likes", 0));
+    IAIMPPlaylist *pl = Plugin::instance()->GetPlaylist(Plugin::instance()->Lang(L"SoundCloud\\Likes", 0), activate);
 
     auto state = std::make_shared<LoadingState>();
     state->Flags = LoadingState::LoadingLikes;

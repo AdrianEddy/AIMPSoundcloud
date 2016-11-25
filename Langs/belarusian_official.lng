@@ -1,0 +1,49 @@
+﻿[FILE]
+Author=prydespar
+Name=Беларуская (BE)
+VersionID=0
+LangId=1059
+
+[SoundCloud]
+ConnectStatusOK=Аўтарызацыя пройдзена|Цяпер можна закрыць гэта акно браўзера і вярнуцца да AIMP.
+ConnectStatusError=Нажаль, адбылася памылка|Не атрымалася падлучыцца да ўліковага запісу SoundCloud. Калі ласка, вярніцеся на AIMP і паспрабуйце яшчэ раз.
+Likes=SoundCloud - Падабаецца|Падабаецца
+Stream=SoundCloud - Струмень|Струмені
+Recommended=Рэкамендавана 
+Prefix=SoundCloud - 
+
+[SoundCloud.Messages]
+Error=Памылка
+CantResolve=Не атрымалася апрацаваць гэты адрас.
+
+[SoundCloud.Menu]
+Repost=Repost
+AddURL=SoundCloud URL
+MyTracksAndPlaylists=Мае трэкі і плэйлісты
+MyStream=SoundCloud мае струмені
+MyLikes=SoundCloud маё любімае
+LoadRecommendations=Загрузка рэкамендацый|Тут|Стварыць новы плэйліст
+OpenInBrowser=Адкрыць у вэб-браўзеры
+AddToExclusions=Дадаць у спіс выключэнняў
+LikeUnlike=Падабаецца / Не падабаецца|Падабаецца|Не падабаецца
+
+[SoundCloud.AddURL]
+Title=Дадаць SoundCloud URL
+URL=SoundCloud URL
+CreateNew=Стварыць новы плэйліст
+OK=OK
+PlaylistName=Назва плэйліста (апцыянальна)
+
+[SoundCloud.Options]
+Title=SoundCloud
+Account=Уліковы запіс SoundCloud
+ConnectButton=аўтарызавацца|выйсці
+General=Галоўнае
+AddDurationToTitle=Дадаць працягласць трэка ў назву
+AddUsernameToTitle=Дадаць імя карыстальніка ў назву трэка
+LimitUserStream=Абмежаванне струменяў|на карыстальніка
+MonitorURLs=Маніторынг дададзеных URL-адрасоў
+MonitorLikes=Маніторынг каханага
+MonitorStream=Маніторынг струменяў
+CheckAtStartup=Праверка новых трэкаў пры запуску AIMP
+CheckEvery=Праверка новых трэкаў праз прамежак часу ў гадзінах:|

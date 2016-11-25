@@ -1,0 +1,49 @@
+﻿[FILE]
+Author=Sztewe
+Name=Hungarian (hu)
+VersionID=0
+LangId=1038
+
+[SoundCloud]
+ConnectStatusOK=Hozzáférés megadva! Most már bezárhatod ezt a böngésző ablakot és visszatérhetsz az AIMP hoz.
+ConnectStatusError=Sajnálom, de hiba történt|Nem tudok csatlakozni a SoundCloud fiókhoz. Térj vissza az AIMP hoz és próbáld újra.
+Likes=SoundCloud - Kedvencek| Kedvencei
+Stream=SoundCloud - Stream| streamjei
+Recommended=Ajánlott 
+Prefix=SoundCloud - 
+
+[SoundCloud.Messages]
+Error=Hiba
+CantResolve=Nem tudtam feloldani a címet.
+
+[SoundCloud.Menu]
+Repost=Megosztás
+AddURL=SoundCloud URL
+MyTracksAndPlaylists=Az én számaim, és listáim
+MyStream=SoundCloud stream
+MyLikes=SoundCloud kedvencek
+LoadRecommendations=Ajánlások betöltése|Itt|Új lejátszási lista
+OpenInBrowser=Megnyitás böngészőben
+AddToExclusions=Hozzáadás a kivételekhez
+LikeUnlike=Kedvenc / Töröl|Kedvenc|Töröl
+
+[SoundCloud.AddURL]
+Title=Hozzáadás SoundCloud URL ből
+URL=SoundCloud URL
+CreateNew=Új lejátszási lista
+OK=OK
+PlaylistName=Lista neve (opcionális)
+
+[SoundCloud.Options]
+Title=SoundCloud
+Account=SoundCloud fiók
+ConnectButton=Kapcsolódás|Bontás
+General=Általános
+AddDurationToTitle=Szám hosszának hozzáadása a szám címéhez
+AddUsernameToTitle=Felhasználónév hozzáadása a szám címéhez
+LimitUserStream=Felhasználó streamjeinek korlátozása|számra
+MonitorURLs=Hozzáadott URLek figyelése
+MonitorLikes=Felhasználó kedvenceinek figyelése
+MonitorStream=Felhasználó streamjének figyelése
+CheckAtStartup=Új számok keresése AIMP indításakor
+CheckEvery=Új számok keresése |óránként
