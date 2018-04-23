@@ -1,0 +1,58 @@
+﻿[FILE]
+Author=VenusGirl VenusGirl@outlook.com
+Name=한국어 (KR)
+VersionID=0
+LangId=1042
+
+[SoundCloud]
+ConnectStatusOK=권한 부여|이제 이 브라우저 창을 닫고 AIMP로 돌아갈 수 있습니다.
+ConnectStatus오류 = 죄송합니다, 오류가 발생했습니다|SoundCloud 계정에 연결할 수 없습니다. AIMP로 돌아가서 다시 시도하십시오.
+Likes=SoundCloud - 좋아요|좋아요
+Stream=SoundCloud - 스트림|'스트림
+Recommended=추천 
+Prefix=SoundCloud - 
+
+[SoundCloud.Messages]
+Error=Error
+CantResolve=이 URL을 해결할 수 없습니다.
+
+[SoundCloud.Menu]
+Repost=다시 게시
+AddURL=SoundCloud URL
+MyTracksAndPlaylists=내 트랙 및 재생 목록
+MyStream=SoundCloud 스트림
+MyLikes=SoundCloud 좋아해요
+LoadRecommendations=권장 사항|여기|새 재생 목록 만들기 로드
+OpenInBrowser=웹 브라우저에서 열기
+AddToExclusions=제외에 추가
+LikeUnlike=좋아요 / 싫어요|좋아요|싫어요
+CheckForNewItems=새 트랙 확인
+
+[SoundCloud.AddURL]
+Title=SoundCloud URL 추가
+URL=SoundCloud URL
+CreateNew=새 재생 목록 만들기
+OK=확인
+PlaylistName=재생 목록 이름 (선택 사항)
+
+[SoundCloud.Options]
+Title=SoundCloud
+Account=SoundCloud 계정
+ConnectButton=연결|연결 해제
+General=일반
+AddDurationToTitle=트랙 제목에 재생 시간 추가
+AddUsernameToTitle=트랙 제목에 작성자 사용자 이름 추가
+LimitUserStream=사용자의 스트림 항목을 다음으로 제한|트랙
+MonitorURLs=추가된 URL 모니터링
+MonitorLikes=사용자의 좋아요 모니터링
+MonitorStream=사용자의 스트림 모니터링
+CheckAtStartup=AIMP 시작시 새 트랙 확인
+CheckEvery=매번 새로운 트랙을 확인|시간
+
+[SoundCloud.Exclusions]
+Title=제외 트랙
+Header=제외 트랙 관리
+ListHeader=트랙 제목|재생 시간
+Remove=제외 항목에서 삭제
+RemoveAndAddToPlaylist=제외 항목에서 삭제하고 재생 목록에 추가
+OK=확인

@@ -1,0 +1,58 @@
+﻿[FILE]
+Author=martinco78
+Name=Slovak (SK)
+VersionID=0
+LangId=1051
+
+[SoundCloud]
+ConnectStatusOK=Prístup povolený|Teraz môžete zavrieť okno prehliadača a prejsť späť do prehrávača AIMP.
+ConnectStatusError=Prepáčte, vyskytla sa chyba|Nebolo možné pripojiť sa k SoundCloud účtu. Prejdite späť do prehrávača AIMP vyskúšajte to znovu.
+Likes=SoundCloud - Páči sa| - Páči sa
+Stream=SoundCloud - Stream| - Stream
+Recommended=Odporúčané pre 
+Prefix=SoundCloud - 
+
+[SoundCloud.Messages]
+Error=Chyba
+CantResolve=Nebolo možné rozpoznať URL adresu.
+
+[SoundCloud.Menu]
+Repost=Preposlať
+AddURL=SoundCloud URL
+MyTracksAndPlaylists=Moje skladby a playlist
+MyStream=SoundCloud stream
+MyLikes=SoundCloud Páči sa
+LoadRecommendations=Načítať odporúčané|do tohto playlistu|vytvoriť nový playlist
+OpenInBrowser=Otvoriť vo webovom prehliadači
+AddToExclusions=Pridať do výnimiek
+LikeUnlike=Páči sa / Nepáči sa|Páči sa mi to|Nepáči sa mi to
+CheckForNewItems=Skontrolovať nové skladby
+
+[SoundCloud.AddURL]
+Title=Pridať SoundCloud URL
+URL=SoundCloud URL adresa
+CreateNew=Vytvoriť nový playlist
+OK=OK
+PlaylistName=Názov playlistu (voliteľný)
+
+[SoundCloud.Options]
+Title=SoundCloud
+Account=SoundCloud účet
+ConnectButton=Pripojiť|Odpojiť
+General=Všeobecné
+AddDurationToTitle=Pridať trvanie do názvu skladby
+AddUsernameToTitle=Pridať meno autora do názvu skladby
+LimitUserStream=Obmedziť počer streamovaných položiek na |skladieb
+MonitorURLs=Kontrolovať pridané URL adresy
+MonitorLikes=Kontrolovať Páči sa používateľa
+MonitorStream=Kontrolovať stream používateľa
+CheckAtStartup=Skontrolovať nové skladby pri spustení prehrávača AIMP
+CheckEvery=Skontrolovať nové skladby každých |hodín
+
+[SoundCloud.Exclusions]
+Title=Výnimky skladieb
+Header=Spravovať výnimky skladieb
+ListHeader=Názov skladby|Trvanie
+Remove=Odstrániť z výnimiek
+RemoveAndAddToPlaylist=Odstrániť z výnimiek a pridať do playlistu
+OK=OK
