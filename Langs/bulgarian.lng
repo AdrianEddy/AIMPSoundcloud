@@ -1,0 +1,58 @@
+﻿[FILE]
+Author=Костадин Цветков/Choveka
+Name=Български (BG)
+VersionID=0
+VersionID=4001
+
+[SoundCloud]
+ConnectStatusOK=Упълномощаването завърши|Вие вече може да затворите този прозорец и да се върнете към AIMP.
+ConnectStatusError=Съжалявам, получи се грешка|Невъзможно свързването със SoundCloud акаунта. Моля върнете се към AIMP и опитайте отново.
+Likes=SoundCloud - Харесвания|Харесвания
+Stream=SoundCloud - Поток|Потоци
+Recommended=Препоръчано за 
+Prefix=SoundCloud - 
+
+[SoundCloud.Messages]
+Error=Грешка
+CantResolve=Не може да се удостовери този адрес.
+
+[SoundCloud.Menu]
+Repost=Сподели
+AddURL=SoundCloud URL адрес
+MyTracksAndPlaylists=Моите тракове и плейлисти
+MyStream=SoundCloud Моите потоци
+MyLikes=SoundCloud Моите харесвания
+LoadRecommendations=Зареди препоръчаните|Тук|Създай нов плейлист
+OpenInBrowser=Отвори в уеббраузър
+AddToExclusions=Добави в списък с изключения
+LikeUnlike=Харесвам / Не харесвам|Харесвам|Не харесвам
+CheckForNewItems=Провери за нови тракове
+
+[SoundCloud.AddURL]
+Title=Добави SoundCloud URL адрес
+URL=SoundCloud URL адрес
+CreateNew=Създай нов плейлист
+OK=ОК
+PlaylistName=Име на плейлиста (по избор)
+
+[SoundCloud.Options]
+Title=SoundCloud
+Account=SoundCloud акаунт
+ConnectButton=Вход|Изход
+General=Основни
+AddDurationToTitle=Добави продължителността на трака към заглавието
+AddUsernameToTitle=Добави потребителско име в заглавието на трака
+LimitUserStream=Ограничаване на потоците до|на потребител
+MonitorURLs=Наблюдавай добавените URL адреси
+MonitorLikes=Наблюдавай потребителските харесвания
+MonitorStream=Наблюдавай потребителските потоци
+CheckAtStartup=Проверявай за нови тракове при стартиране на AIMP
+CheckEvery=Проверявай за нови тракове на всеки |час/а
+
+[SoundCloud.Exclusions]
+Title=Проследяване на изключенията
+Header=Управление на изключенията
+ListHeader=Заглавие на трака|Продължителност
+Remove=Премахни от изключенията
+RemoveAndAddToPlaylist=Премахни от изключенията и добави към плейлист
+OK=OK
